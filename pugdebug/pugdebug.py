@@ -44,7 +44,7 @@ class Pugdebug(QObject):
 
         self.debugger = PugdebugDebugger()
 
-        self.formatter = PugdebugFormatter()
+        self.formatter = PugdebugFormatter(style='default')
 
         # UI elements
         self.main_window = PugdebugMainWindow()
