@@ -76,11 +76,9 @@ class Pugdebug(QObject):
 
         project_root = get_setting('path/project_root')
         model = PugdebugFileBrowser(self)
-        model.set_path(project_root)
 
         self.file_browser.setModel(model)
-        self.file_browser.setRootIndex(model.start_index)
-        self.file_browser.hide_columns()
+        self.file_browser.set_path(project_root)
 
     def setup_projects_browser(self):
         """Setup the projects browser
@@ -524,10 +522,7 @@ class Pugdebug(QObject):
 
         logging.debug("Project root changed: %s" % project_root)
 
-        model = self.file_browser.model()
-        model.set_path(project_root)
-        self.file_browser.setModel(model)
-        self.file_browser.setRootIndex(model.start_index)
+        self.file_browser.set_path(project_root)
 
     def handle_debugger_features_changed(self):
         logging.debug("Debugger features changed")

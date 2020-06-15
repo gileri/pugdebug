@@ -10,12 +10,17 @@
 __author__ = "robertbasic"
 
 from PyQt5.QtWidgets import QFileSystemModel
+from PyQt5.QtCore import QDir
 
 
 class PugdebugFileBrowser(QFileSystemModel):
 
     def __init__(self, parent):
         super(PugdebugFileBrowser, self).__init__(parent)
+        self.setFilter(QDir.AllEntries
+                       | QDir.NoDotAndDotDot
+                       | QDir.AllDirs
+                       | QDir.Hidden)
 
     def set_path(self, path):
         self.setRootPath(path)

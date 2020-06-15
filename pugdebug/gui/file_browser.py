@@ -18,8 +18,17 @@ class PugdebugFileBrowser(QTreeView):
         super(PugdebugFileBrowser, self).__init__()
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.header().setStretchLastSection(False)
+        self.setHeaderHidden(True)
 
-    def hide_columns(self):
+    def setModel(self, model):
+        super().setModel(model)
+
+        # Hide extra columns (Size, Type, Date Modified)
         self.setColumnHidden(1, True)
         self.setColumnHidden(2, True)
         self.setColumnHidden(3, True)
+
+    def set_path(self, path):
+        model = self.model()
+        model.set_path(path)
+        self.setRootIndex(model.start_index)
