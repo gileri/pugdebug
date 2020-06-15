@@ -10,7 +10,8 @@
  - Simple logging, appending to ~/pugdebug.log
  - UI improvements
  - New Go to line window
- - Better support on linux
+ - Better support on linux (including file names with initial dot)
+ - Better syntax highlighting
  - New readme
 
 ### Changed
