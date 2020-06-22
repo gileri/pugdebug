@@ -11,7 +11,6 @@ __author__ = "robertbasic"
 
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QPushButton, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QFont
 
 from pugdebug.gui.forms import PugdebugSettingsForm
 from pugdebug.models.settings import (get_setting, has_setting,
@@ -33,7 +32,6 @@ class PugdebugSettingsWindow(QDialog):
         self.accepted.connect(self.save_settings)
 
         self.setup_layout()
-        self.setup_fonts()
 
     def setup_layout(self):
         # Buttons
@@ -58,12 +56,6 @@ class PugdebugSettingsWindow(QDialog):
         box_layout.addLayout(button_layout)
 
         self.setLayout(box_layout)
-
-    def setup_fonts(self):
-        font = QFont('mono')
-        font.setStyleHint(QFont.Monospace)
-        font.setPixelSize(12)
-        self.setFont(font)
 
     def showEvent(self, event):
         """Load setting from store when showing the dialog."""

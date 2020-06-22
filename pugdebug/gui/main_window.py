@@ -12,7 +12,7 @@ __author__ = "robertbasic"
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (QMainWindow, QToolBar, QMenuBar, QDockWidget,
                              QAction)
-from PyQt5.QtGui import QFont, QKeySequence
+from PyQt5.QtGui import QKeySequence
 
 from pugdebug.gui.file_browser import PugdebugFileBrowser
 from pugdebug.gui.settings import PugdebugSettingsWindow
@@ -73,7 +73,6 @@ class PugdebugMainWindow(QMainWindow):
         super(PugdebugMainWindow, self).closeEvent(event)
 
     def setup_gui_elements(self):
-        self.setup_fonts()
         self.setup_docks()
 
         self.setup_file_actions()
@@ -91,12 +90,6 @@ class PugdebugMainWindow(QMainWindow):
         self.permanent_statusbar = PugdebugStatusBar()
         self.statusBar().addPermanentWidget(self.permanent_statusbar)
         self.set_debugging_status(0)
-
-    def setup_fonts(self):
-        font = QFont('mono')
-        font.setStyleHint(QFont.Monospace)
-        font.setPixelSize(12)
-        self.setFont(font)
 
     def setup_docks(self):
         self.__add_dock_widget(

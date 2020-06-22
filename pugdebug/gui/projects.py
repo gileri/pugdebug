@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (QDialog, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFormLayout, QLineEdit, QTreeView, QAction, QMenu,
                              QMessageBox)
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon
 
 from pugdebug.gui.forms import PugdebugSettingsForm
 from pugdebug.models.projects import PugdebugProject
@@ -36,7 +36,6 @@ class PugdebugNewProjectWindow(QDialog):
         self.accepted.connect(self.create_new_project)
 
         self.setup_layout()
-        self.setup_fonts()
 
         self.load_settings()
 
@@ -62,12 +61,6 @@ class PugdebugNewProjectWindow(QDialog):
         box_layout.addLayout(button_layout)
 
         self.setLayout(box_layout)
-
-    def setup_fonts(self):
-        font = QFont('mono')
-        font.setStyleHint(QFont.Monospace)
-        font.setPixelSize(12)
-        self.setFont(font)
 
     def create_new_project(self):
         project_name = self.project_name.text()
