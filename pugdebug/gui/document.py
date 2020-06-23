@@ -53,19 +53,20 @@ class PugdebugDocument(QWidget):
         )
 
         self.layout = QGridLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.line_numbers, 0, 0, 1, 1)
         self.layout.addWidget(self.document_contents, 0, 1, 1, 1)
-        
+
         self.shortcut_search = QShortcut(QKeySequence("Ctrl+F"), self)
         self.shortcut_search.activated.connect(self.show_search_modal)
-        
+
         self.shortcut_move_to_line = QShortcut(QKeySequence("Ctrl+G"), self)
         self.shortcut_move_to_line.activated.connect(self.show_move_to_line)
-        
+
     def show_search_modal(self):
         text, ok = QInputDialog.getText(self, 'Search', 'Insert word')
         self.document_contents.find(text)
-        
+
     def show_move_to_line(self):
         text, ok = QInputDialog.getText(self, 'Line Number', 'Insert line number')
         self.document_contents.move_to_line(int(text), True)
@@ -103,7 +104,6 @@ class PugdebugDocument(QWidget):
         font_metrics = self.document_contents.fontMetrics()
 
         painter = QPainter(line_numbers)
-        painter.fillRect(event.rect(), self.document_contents.palette().base())
 
         block = self.document_contents.firstVisibleBlock()
         line_number = block.blockNumber()

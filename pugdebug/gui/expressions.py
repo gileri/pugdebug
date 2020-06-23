@@ -54,6 +54,7 @@ class PugdebugExpressionViewer(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.tree)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
         self.restore_state()

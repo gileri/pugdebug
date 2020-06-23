@@ -25,6 +25,8 @@ class PugdebugStatusBar(QWidget):
         layout.addWidget(self.label)
 
         self.setLayout(layout)
+        leftMargin, _, rightMargin, _ = layout.getContentsMargins()
+        layout.setContentsMargins(leftMargin, 0, rightMargin, 0)
 
     def set_debugging_status(self, status):
         if status == 0:
