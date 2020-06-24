@@ -29,6 +29,8 @@ class PugdebugBreakpointViewer(QTreeWidget):
         self.header().setStretchLastSection(False)
         self.setColumnHidden(2, True)
 
+        self.setRootIsDecorated(False)
+
         self.itemDoubleClicked.connect(self.handle_item_double_clicked)
 
     def set_breakpoints(self, breakpoints):

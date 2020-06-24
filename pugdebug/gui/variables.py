@@ -12,7 +12,7 @@ __author__ = "robertbasic"
 import base64
 
 from PyQt5.QtWidgets import (QTabWidget, QTreeWidget, QTreeWidgetItem, QDialog,
-                             QTextEdit, QGridLayout, QHeaderView)
+                             QTextEdit, QGridLayout)
 
 
 class PugdebugVariableViewer(QTabWidget):
@@ -63,9 +63,6 @@ class PugdebugVariableViewer(QTabWidget):
             table = QTreeWidget()
             table.setColumnCount(3)
             table.setHeaderLabels(['Name', 'Type', 'Value'])
-            table.header().setSectionResizeMode(0, QHeaderView.Stretch)
-            table.header().setSectionResizeMode(1, QHeaderView.Stretch)
-            table.header().setSectionResizeMode(2, QHeaderView.Stretch)
 
             self.variable_tables[context_key] = table
 

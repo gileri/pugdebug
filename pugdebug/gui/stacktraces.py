@@ -29,6 +29,8 @@ class PugdebugStacktraceViewer(QTreeWidget):
         self.setColumnWidth(1, 100)
         self.setColumnHidden(3, True)
 
+        self.setRootIsDecorated(False)
+
         self.itemDoubleClicked.connect(self.handle_item_double_clicked)
 
     def set_stacktraces(self, stacktraces):

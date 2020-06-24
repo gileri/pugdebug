@@ -100,6 +100,10 @@ class PugdebugProjectsBrowser(QTreeView):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
+        self.setHeaderHidden(True)
+
+        self.setRootIsDecorated(False)
+
     def load_projects(self):
         model = self.model()
         model.load_projects()
