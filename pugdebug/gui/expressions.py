@@ -192,7 +192,7 @@ class PugdebugExpressionViewer(QWidget):
             value = base64.b64decode(value)
             try:
                 value = value.decode()
-            except:
+            except Exception:
                 value = repr(value)
 
         if result['type'] == 'bool':

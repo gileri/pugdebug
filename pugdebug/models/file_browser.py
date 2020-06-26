@@ -17,10 +17,10 @@ class PugdebugFileBrowser(QFileSystemModel):
 
     def __init__(self, parent):
         super(PugdebugFileBrowser, self).__init__(parent)
-        self.setFilter(QDir.AllEntries
-                       | QDir.NoDotAndDotDot
-                       | QDir.AllDirs
-                       | QDir.Hidden)
+        self.setFilter(QDir.AllEntries |
+                       QDir.NoDotAndDotDot |
+                       QDir.AllDirs |
+                       QDir.Hidden)
 
     def set_path(self, path):
         self.setRootPath(path)

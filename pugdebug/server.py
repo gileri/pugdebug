@@ -94,7 +94,8 @@ class PugdebugServer(QThread):
                             # the connection
                             is_valid = False
                             self.server_error_signal.emit(
-                                '%s (during connection initialization)' % e.strerror
+                                '%s (during connection initialization)' %
+                                e.strerror
                             )
 
                         if is_valid and self.wait_for_accept:

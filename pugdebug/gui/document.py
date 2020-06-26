@@ -68,7 +68,7 @@ class PugdebugDocument(QWidget):
         self.document_contents.find(text)
 
     def show_move_to_line(self):
-        text, ok = QInputDialog.getText(self, 'Line Number', 'Insert line number')
+        text, ok = QInputDialog.getText(self, 'Go To', 'Line number')
         self.document_contents.move_to_line(int(text), True)
 
     def handle_document_changed(self, document_model):
