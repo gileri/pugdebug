@@ -59,8 +59,7 @@ class PugdebugMainWindow(QMainWindow):
         if has_setting("window/state"):
             self.restoreState(get_setting("window/state"))
 
-        if has_setting("current_project"):
-            self.set_window_title(get_setting("current_project"))
+        self.set_window_title(get_setting("current_project"))
 
         self.projects_browser.project_deleted_signal.connect(
             self.handle_project_deleted

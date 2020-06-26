@@ -73,7 +73,7 @@ class PugdebugServer(QThread):
         Otherwise silently disregard that connection.
         """
         host = get_setting('debugger/host')
-        port_number = int(get_setting('debugger/port_number'))
+        port_number = get_setting('debugger/port_number')
 
         try:
             socket_server.bind((host, port_number))
@@ -441,21 +441,21 @@ class PugdebugServerConnection(QObject):
         return self.parser.parse_eval_message(response)
 
     def __set_debugger_features(self):
-        max_depth = int(get_setting('debugger/max_depth'))
+        max_depth = get_setting('debugger/max_depth')
         command = 'feature_set -i %d -n max_depth -v %d' % (
             self.__get_transaction_id(),
             max_depth
         )
         self.__send_command(command)
 
-        max_children = int(get_setting('debugger/max_children'))
+        max_children = get_setting('debugger/max_children')
         command = 'feature_set -i %d -n max_children -v %d' % (
             self.__get_transaction_id(),
             max_children
         )
         self.__send_command(command)
 
-        max_data = int(get_setting('debugger/max_data'))
+        max_data = get_setting('debugger/max_data')
         command = 'feature_set -i %d -n max_data -v %d' % (
             self.__get_transaction_id(),
             max_data

@@ -79,11 +79,14 @@ class PugdebugSettingsForm():
         """A generic method which can set the value of any of the used widgets.
         """
         if isinstance(widget, QLineEdit):
-            widget.setText(value)
+            widget.setText(str(value))
         elif isinstance(widget, QSpinBox):
             widget.setValue(int(value))
         elif isinstance(widget, QCheckBox):
-            widget.setCheckState(int(value))
+            if widget.isTristate():
+                widget.setCheckState(int(value))
+            else:
+                widget.setChecked(bool(value))
         else:
             name = type(widget).__name__
             raise Exception("Don't know how to set a value for %s" % name)
@@ -96,7 +99,8 @@ class PugdebugSettingsForm():
         elif isinstance(widget, QSpinBox):
             return widget.value()
         elif isinstance(widget, QCheckBox):
-            return widget.checkState()
+            return (widget.checkState() if widget.isTristate()
+                    else widget.isChecked())
         else:
             name = type(widget).__name__
             raise Exception("Don't know how to get a value for %s" % name)

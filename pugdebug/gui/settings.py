@@ -13,8 +13,8 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QPushButton, QVBoxLayout, QHBoxLayout
 
 from pugdebug.gui.forms import PugdebugSettingsForm
-from pugdebug.models.settings import (get_setting, has_setting,
-                                      get_default_setting, save_settings)
+from pugdebug.models.settings import (get_setting, get_default_setting,
+                                      save_settings)
 
 
 class PugdebugSettingsWindow(QDialog):
@@ -78,9 +78,7 @@ class PugdebugSettingsWindow(QDialog):
     def load_settings(self):
         """Loads all settings from QSettings into the form"""
         for name, widget in self.form.widgets.items():
-            value = get_setting(name) if has_setting(name) \
-                else get_default_setting(name)
-            self.form.set_widget_value(widget, value)
+            self.form.set_widget_value(widget, get_setting(name))
 
     def save_settings(self):
         """Saves all settings from the form to QSettings"""
@@ -98,5 +96,4 @@ class PugdebugSettingsWindow(QDialog):
     def reset_defaults(self):
         """Resets all settings to their deafult values"""
         for name, widget in self.form.widgets.items():
-            value = get_default_setting(name)
-            self.form.set_widget_value(widget, value)
+            self.form.set_widget_value(widget, get_default_setting(name))

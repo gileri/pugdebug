@@ -11,25 +11,25 @@ __author__ = "robertbasic"
 
 import os
 
-from PyQt5.QtCore import QCoreApplication, QSettings, Qt
+from PyQt5.QtCore import QCoreApplication, QSettings
 
 
 class PugdebugSettings():
 
-    defaults = {
-        'debugger/host': '127.0.0.1',
-        'debugger/port_number': 9000,
-        'debugger/idekey': 'pugdebug',
-        'debugger/break_at_first_line': Qt.Checked,
-        'debugger/max_depth': '3',
-        'debugger/max_children': '128',
-        'debugger/max_data': '512',
+    settings_info = {
+        'debugger/host': dict(type=str, default='127.0.0.1'),
+        'debugger/port_number': dict(type=int, default=9000),
+        'debugger/idekey': dict(type=str, default='pugdebug'),
+        'debugger/break_at_first_line': dict(type=bool, default=True),
+        'debugger/max_depth': dict(type=int, default=3),
+        'debugger/max_children': dict(type=int, default=128),
+        'debugger/max_data': dict(type=int, default=512),
 
-        'path/project_root': os.path.expanduser('~'),
-        'path/path_mapping': '',
+        'path/project_root': dict(type=str, default=os.path.expanduser('~')),
+        'path/path_mapping': dict(type=str, default=''),
 
-        'editor/tab_width': 80,
-        'editor/font_size': 12
+        'editor/tab_width': dict(type=int, default=80),
+        'editor/font_size': dict(type=int, default=12),
     }
 
     def __init__(self):
@@ -50,15 +50,30 @@ class PugdebugSettings():
 
     def setup_default_settings(self):
         """Set the default values for settings which don't have a value."""
-        for key, value in self.defaults.items():
-            if not self.has(key):
-                self.set(key, value)
+        for key, setting_info in self.settings_info.items():
+            if not self.has(key) and 'default' in setting_info:
+                self.set(key, setting_info['default'])
 
     def get(self, key):
-        return self.application_settings.value(key)
+        default = self.get_default(key)
+        to_type = self.get_type(key)
+        value = self.application_settings.value(key, default)
+
+        if to_type is not None:
+            try:
+                value = to_type(value)
+            except (TypeError, ValueError):
+                value = default
+
+        return value
 
     def get_default(self, key):
-        return self.defaults[key] if key in self.defaults else None
+        if key in self.settings_info and 'default' in self.settings_info[key]:
+            return self.settings_info[key]['default']
+
+    def get_type(self, key):
+        if key in self.settings_info and 'type' in self.settings_info[key]:
+            return self.settings_info[key]['type']
 
     def has(self, key):
         return self.application_settings.contains(key)

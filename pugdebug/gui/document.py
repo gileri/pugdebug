@@ -211,10 +211,10 @@ class PugdebugDocumentContents(QPlainTextEdit):
         self.syntaxer.highlight()
 
     def set_editor_features(self):
-        self.setTabStopWidth(int(get_setting('editor/tab_width')))
+        self.setTabStopWidth(get_setting('editor/tab_width'))
 
         font = QFont('mono')
-        font.setPixelSize(int(get_setting('editor/font_size')))
+        font.setPixelSize(get_setting('editor/font_size'))
         self.setFont(font)
 
     def mousePressEvent(self, event):
@@ -350,7 +350,7 @@ class PugdebugLineNumbers(QWidget):
 
     def set_font_size(self):
         font = QFont()
-        font.setPixelSize(int(get_setting('editor/font_size')))
+        font.setPixelSize(get_setting('editor/font_size'))
         self.setFont(font)
 
     def set_numbers_width(self, number_of_lines):

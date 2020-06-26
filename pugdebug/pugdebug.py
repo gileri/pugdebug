@@ -548,15 +548,15 @@ class Pugdebug(QObject):
         """
         logging.debug("Start listening")
 
-        break_at_first_line = int(get_setting('debugger/break_at_first_line'))
+        break_at_first_line = get_setting('debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
-            'Yes' if break_at_first_line != 0 else 'No'
+            'Yes' if break_at_first_line else 'No'
         ))
 
         start_debugging = True
 
-        if break_at_first_line == 0 and len(self.breakpoints) == 0:
+        if not break_at_first_line and len(self.breakpoints) == 0:
             messageBox = QMessageBox()
             messageBox.setText("There are no breakpoints set and the break at"
                                " first line setting is turned off.")
@@ -626,13 +626,13 @@ class Pugdebug(QObject):
         If the code should not break at first line, run the debugger.
         """
         logging.debug("Post start")
-        break_at_first_line = int(get_setting('debugger/break_at_first_line'))
+        break_at_first_line = get_setting('debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
-            'Yes' if break_at_first_line != 0 else 'No'
+            'Yes' if break_at_first_line else 'No'
         ))
 
-        if break_at_first_line == 0:
+        if not break_at_first_line:
             self.run_debug()
         else:
             self.step_into()
