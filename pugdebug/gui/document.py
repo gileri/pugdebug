@@ -217,6 +217,11 @@ class PugdebugDocumentContents(QPlainTextEdit):
         font.setPixelSize(get_setting('editor/font_size'))
         self.setFont(font)
 
+        wrapMode = (QPlainTextEdit.WidgetWidth
+                    if get_setting('editor/enable_text_wrapping')
+                    else QPlainTextEdit.NoWrap)
+        self.setLineWrapMode(wrapMode)
+
     def mousePressEvent(self, event):
         pass
 

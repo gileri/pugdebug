@@ -30,6 +30,7 @@ class PugdebugSettings():
 
         'editor/tab_width': dict(type=int, default=80),
         'editor/font_size': dict(type=int, default=12),
+        'editor/enable_text_wrapping': dict(type=bool, default=False),
     }
 
     def __init__(self):

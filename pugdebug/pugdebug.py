@@ -507,7 +507,8 @@ class Pugdebug(QObject):
             self.handle_debugger_features_changed()
 
         features = ['editor/tab_width',
-                    'editor/font_size']
+                    'editor/font_size',
+                    'editor/enable_text_wrapping']
 
         if any(True for feature in features
                 if feature in changed_setting_keys):

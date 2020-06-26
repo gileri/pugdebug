@@ -29,6 +29,7 @@ class PugdebugSettingsForm():
             'debugger/max_data': QLineEdit(),
             'editor/tab_width': QSpinBox(),
             'editor/font_size': QSpinBox(),
+            'editor/enable_text_wrapping': QCheckBox("Enable text wrapping"),
         }
 
         # Widget settings
@@ -71,6 +72,7 @@ class PugdebugSettingsForm():
         editor_layout = QFormLayout()
         editor_layout.addRow("Tab width", self.widgets['editor/tab_width'])
         editor_layout.addRow("Font size", self.widgets['editor/font_size'])
+        editor_layout.addRow("", self.widgets['editor/enable_text_wrapping'])
 
         self.editor_group = QGroupBox("Editor")
         self.editor_group.setLayout(editor_layout)
