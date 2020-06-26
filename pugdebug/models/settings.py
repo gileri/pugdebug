@@ -57,13 +57,14 @@ class PugdebugSettings():
     def get(self, key):
         default = self.get_default(key)
         to_type = self.get_type(key)
-        value = self.application_settings.value(key, default)
 
         if to_type is not None:
             try:
-                value = to_type(value)
-            except (TypeError, ValueError):
+                value = self.application_settings.value(key, default, to_type)
+            except TypeError:
                 value = default
+        else:
+            value = self.application_settings.value(key, default)
 
         return value
 
