@@ -214,11 +214,12 @@ class PugdebugDocumentContents(QPlainTextEdit):
         self.syntaxer.highlight()
 
     def set_editor_features(self):
-        self.setTabStopWidth(get_setting('editor/tab_width'))
-
         font = QFont('mono')
         font.setPointSize(get_setting('editor/font_size'))
         self.setFont(font)
+
+        self.setTabStopWidth(self.fontMetrics().width(' ') *
+                             get_setting('editor/tab_size'))
 
         wrapMode = (QPlainTextEdit.WidgetWidth
                     if get_setting('editor/enable_text_wrapping')

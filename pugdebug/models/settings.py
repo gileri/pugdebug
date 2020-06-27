@@ -28,7 +28,7 @@ class PugdebugSettings():
         'path/project_root': dict(type=str, default=os.path.expanduser('~')),
         'path/path_mapping': dict(type=str, default=''),
 
-        'editor/tab_width': dict(type=int, default=80),
+        'editor/tab_size': dict(type=int, default=4),
         'editor/font_size': dict(type=int, default=10),
         'editor/enable_text_wrapping': dict(type=bool, default=False),
     }
