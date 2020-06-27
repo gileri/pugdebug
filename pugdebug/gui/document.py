@@ -92,8 +92,8 @@ class PugdebugDocument(QWidget):
         if (dy != 0):
             self.line_numbers.scroll(0, dy)
 
-        number_of_lines = self.document_contents.blockCount()
-        self.line_numbers.set_numbers_width(number_of_lines)
+        line_count = self.document_contents.blockCount()
+        self.line_numbers.set_line_count(line_count)
 
     def paint_line_numbers(self, line_numbers, event):
         """Paint the line numbers
@@ -110,6 +110,8 @@ class PugdebugDocument(QWidget):
 
         height = font_metrics.height()
         width = line_numbers.width()
+        breakpoint_size = 8
+        breakpoint_y_offset = height / 2 - breakpoint_size / 2
 
         while block.isValid():
             # blocks are numbered from zero
@@ -138,7 +140,8 @@ class PugdebugDocument(QWidget):
                 else:
                     brush.setColor(Qt.darkGreen)
                 painter.setBrush(brush)
-                rect = QRect(0, block_top + 2, 7, 7)
+                rect = QRect(0, block_top + breakpoint_y_offset,
+                             breakpoint_size, breakpoint_size)
                 painter.drawRect(rect)
 
             # Convert the line number to string so we can paint it
@@ -214,7 +217,7 @@ class PugdebugDocumentContents(QPlainTextEdit):
         self.setTabStopWidth(get_setting('editor/tab_width'))
 
         font = QFont('mono')
-        font.setPixelSize(get_setting('editor/font_size'))
+        font.setPointSize(get_setting('editor/font_size'))
         self.setFont(font)
 
         wrapMode = (QPlainTextEdit.WidgetWidth
@@ -348,20 +351,30 @@ class PugdebugLineNumbers(QWidget):
 
     document_widget = None
 
+    line_count = 1
+
     def __init__(self, document_widget):
         super(PugdebugLineNumbers, self).__init__()
 
         self.document_widget = document_widget
 
+        self.set_font_size()
+
     def set_font_size(self):
-        font = QFont()
-        font.setPixelSize(get_setting('editor/font_size'))
+        font = QFont('mono')
+        font.setPointSize(get_setting('editor/font_size'))
         self.setFont(font)
 
-    def set_numbers_width(self, number_of_lines):
-        digits = int(math.log10(number_of_lines) + 1)
-        # add 7 to have space to paint the breakpoint markers
-        width = digits * 10 + 7
+        self.__set_width()
+
+    def set_line_count(self, line_count):
+        self.line_count = line_count
+        self.__set_width()
+
+    def __set_width(self):
+        digits = math.floor(math.log10(self.line_count) + 1)
+        # add 14 to have space to paint the breakpoint markers
+        width = digits * self.fontMetrics().width('0') + 14
         self.setFixedWidth(width)
 
     def paintEvent(self, event):
