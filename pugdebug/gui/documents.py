@@ -20,9 +20,9 @@ class PugdebugDocumentViewer(QTabWidget):
     def __init__(self):
         super(PugdebugDocumentViewer, self).__init__()
 
-        # Use the extended tab bar wiget to have middle click close tabs
+        # Use the extended tab bar widget to have middle click close tabs
         self.tab_bar = PugdebugTabBar()
-        self.tab_bar.middle_clicked_signal.connect(self.close_tab)
+        self.tab_bar.middle_clicked_signal.connect(self.tabCloseRequested.emit)
         self.setTabBar(self.tab_bar)
 
         self.setTabsClosable(True)
