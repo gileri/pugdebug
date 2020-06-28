@@ -10,7 +10,8 @@
 __author__ = "robertbasic"
 
 from PyQt5.QtWidgets import (QLineEdit, QFormLayout, QSpinBox, QCheckBox,
-                             QGroupBox)
+                             QGroupBox, QFontComboBox)
+from PyQt5.QtGui import QFont, QFontInfo
 
 
 class PugdebugSettingsForm():
@@ -28,6 +29,7 @@ class PugdebugSettingsForm():
             'debugger/max_children': QLineEdit(),
             'debugger/max_data': QLineEdit(),
             'editor/tab_size': QSpinBox(),
+            'editor/font_family': QFontComboBox(),
             'editor/font_size': QSpinBox(),
             'editor/enable_text_wrapping': QCheckBox("Enable text wrapping"),
         }
@@ -74,8 +76,9 @@ class PugdebugSettingsForm():
 
     def setup_editor_widgets(self):
         editor_layout = QFormLayout()
-        editor_layout.addRow("Tab size", self.widgets['editor/tab_size'])
+        editor_layout.addRow("Font family", self.widgets['editor/font_family'])
         editor_layout.addRow("Font size", self.widgets['editor/font_size'])
+        editor_layout.addRow("Tab size", self.widgets['editor/tab_size'])
         editor_layout.addRow("", self.widgets['editor/enable_text_wrapping'])
 
         self.editor_group = QGroupBox("Editor")
@@ -93,6 +96,10 @@ class PugdebugSettingsForm():
                 widget.setCheckState(int(value))
             else:
                 widget.setChecked(bool(value))
+        elif isinstance(widget, QFontComboBox):
+            font = QFont(value)
+            widget.setCurrentFont(font)
+            widget.setCurrentText(QFontInfo(font).family())
         else:
             name = type(widget).__name__
             raise Exception("Don't know how to set a value for %s" % name)
@@ -107,6 +114,8 @@ class PugdebugSettingsForm():
         elif isinstance(widget, QCheckBox):
             return (widget.checkState() if widget.isTristate()
                     else widget.isChecked())
+        elif isinstance(widget, QFontComboBox):
+            return QFontInfo(widget.currentFont()).family()
         else:
             name = type(widget).__name__
             raise Exception("Don't know how to get a value for %s" % name)

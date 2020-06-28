@@ -80,7 +80,7 @@ class PugdebugDocument(QWidget):
 
     def handle_editor_features_changed(self):
         self.document_contents.set_editor_features()
-        self.line_numbers.set_font_size()
+        self.line_numbers.set_font()
 
     def handle_document_contents_update_request(self, rect, dy):
         """Handle the update request for document contents
@@ -214,7 +214,7 @@ class PugdebugDocumentContents(QPlainTextEdit):
         self.syntaxer.highlight()
 
     def set_editor_features(self):
-        font = QFont('mono')
+        font = QFont(get_setting('editor/font_family'))
         font.setPointSize(get_setting('editor/font_size'))
         self.setFont(font)
 
@@ -359,10 +359,10 @@ class PugdebugLineNumbers(QWidget):
 
         self.document_widget = document_widget
 
-        self.set_font_size()
+        self.set_font()
 
-    def set_font_size(self):
-        font = QFont('mono')
+    def set_font(self):
+        font = QFont(get_setting('editor/font_family'))
         font.setPointSize(get_setting('editor/font_size'))
         self.setFont(font)
 

@@ -507,6 +507,7 @@ class Pugdebug(QObject):
             self.handle_debugger_features_changed()
 
         features = ['editor/tab_size',
+                    'editor/font_family',
                     'editor/font_size',
                     'editor/enable_text_wrapping']
 
