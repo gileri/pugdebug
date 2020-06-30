@@ -4,7 +4,8 @@
 
 ### Added
  - Document is closed if underlying file is deleted
- - Editor settings allowing to set tab width and font size
+ - Editor settings allowing to set font family, tab size in spaces,
+   font size in points and text wrapping
  - A simple file search dialog
  - Titles for project and settings dialogs
  - Simple logging, appending to ~/pugdebug.log
@@ -21,6 +22,7 @@
  - File watching for Windows OS
  - Connecting to document signals when document is changed or removed
  - Focus of buttons in the New Project window, save has focus by default
+ - Opening files after closing tabs with the middle mouse button
 
 ### Removed
 
