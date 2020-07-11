@@ -25,6 +25,8 @@
  - Opening files after closing tabs with the middle mouse button
  - Deleting expressions with the Del key should not work if the focus is
    in another widget.
+ - The context menu in the Projects widget should not be displayed if
+   a user did not click on a project line.
 
 ### Removed
 

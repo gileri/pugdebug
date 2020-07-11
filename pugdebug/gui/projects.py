@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (QDialog, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFormLayout, QLineEdit, QTreeView, QAction, QMenu,
                              QMessageBox)
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QKeySequence
 
 from pugdebug.gui.forms import PugdebugSettingsForm
 from pugdebug.models.projects import PugdebugProject
@@ -95,6 +95,8 @@ class PugdebugProjectsBrowser(QTreeView):
             "&Delete",
             self
         )
+        self.delete_action.setShortcut(QKeySequence("Del"))
+        self.delete_action.setShortcutContext(Qt.WidgetShortcut)
         self.delete_action.triggered.connect(self.handle_delete_action)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -103,6 +105,8 @@ class PugdebugProjectsBrowser(QTreeView):
         self.setHeaderHidden(True)
 
         self.setRootIsDecorated(False)
+
+        self.addAction(self.delete_action)
 
     def load_projects(self):
         model = self.model()
@@ -120,17 +124,30 @@ class PugdebugProjectsBrowser(QTreeView):
 
     def show_context_menu(self, point):
         context_menu = QMenu(self)
+        context_menu.aboutToHide.connect(self.hide_context_menu)
 
-        if self.indexAt(point):
+        if self.indexAt(point).isValid():
             context_menu.addAction(self.delete_action)
 
-        point = self.mapToGlobal(point)
-        context_menu.popup(point)
+        if context_menu.actions():
+            # Remove all actions from the widget
+            # while the context menu is visible
+            self.__actions = self.actions()
+            for action in self.__actions:
+                self.removeAction(action)
+
+            context_menu.popup(self.mapToGlobal(point))
+
+    def hide_context_menu(self):
+        # Restore all actions on the widget
+        self.addActions(self.__actions)
 
     def handle_delete_action(self):
-        index = self.selectedIndexes().pop()
+        indexes = self.selectedIndexes()
+        if not indexes:
+            return
 
-        project = self.model().get_project_by_index(index)
+        project = self.model().get_project_by_index(indexes[0])
 
         messageBox = QMessageBox()
         text = "Deleting the %s project" % project.get_project_name()
