@@ -23,6 +23,8 @@
  - Connecting to document signals when document is changed or removed
  - Focus of buttons in the New Project window, save has focus by default
  - Opening files after closing tabs with the middle mouse button
+ - Deleting expressions with the Del key should not work if the focus is
+   in another widget.
 
 ### Removed
 

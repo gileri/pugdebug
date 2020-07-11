@@ -37,6 +37,7 @@ class PugdebugExpressionViewer(QWidget):
             "&Delete", self
         )
         self.delete_action.setShortcut(QKeySequence("Del"))
+        self.delete_action.setShortcutContext(Qt.WidgetShortcut)
         self.delete_action.triggered.connect(self.handle_delete_action)
 
         self.toolbar = QToolBar()
@@ -50,6 +51,7 @@ class PugdebugExpressionViewer(QWidget):
         self.tree.setSelectionMode(QAbstractItemView.ContiguousSelection)
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.show_context_menu)
+        self.tree.addAction(self.delete_action)
 
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
@@ -62,8 +64,15 @@ class PugdebugExpressionViewer(QWidget):
         self.tree.itemChanged.connect(self.handle_item_changed)
 
     def show_context_menu(self, point):
+        # Remove all actions from the tree widget
+        # while the context menu is visible
+        self.__tree_actions = self.tree.actions()
+        for action in self.__tree_actions:
+            self.tree.removeAction(action)
+
         # Create the context menu on the tree widget
         context_menu = QMenu(self)
+        context_menu.aboutToHide.connect(self.hide_context_menu)
 
         # Add action is always visible
         context_menu.addAction(self.add_action)
@@ -74,6 +83,10 @@ class PugdebugExpressionViewer(QWidget):
 
         point = self.tree.mapToGlobal(point)
         context_menu.popup(point)
+
+    def hide_context_menu(self):
+        # Restore all actions on the tree widget
+        self.tree.addActions(self.__tree_actions)
 
     def add_expression(self, expression):
         item = QTreeWidgetItem([expression, '', ''])
