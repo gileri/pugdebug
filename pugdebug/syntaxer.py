@@ -37,6 +37,9 @@ class PugdebugSyntaxer(QSyntaxHighlighter):
         block_number = self.currentBlock().blockNumber()
         start = 0
 
+        if block_number not in self.formatter.formats:
+            return
+
         for block_format in self.formatter.formats[block_number]:
             count = block_format['count']
             token = block_format['token']
