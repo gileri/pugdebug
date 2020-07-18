@@ -16,7 +16,7 @@ from PyQt5.QtCore import (QObject, QThread, QThreadPool, QRunnable,
                           QMutex, pyqtSignal)
 
 from pugdebug.message_parser import PugdebugMessageParser
-from pugdebug.models.settings import get_setting
+from pugdebug import settings
 
 
 class PugdebugServer(QThread):
@@ -72,8 +72,8 @@ class PugdebugServer(QThread):
 
         Otherwise silently disregard that connection.
         """
-        host = get_setting('debugger/host')
-        port_number = get_setting('debugger/port_number')
+        host = settings.get('debugger/host')
+        port_number = settings.get('debugger/port_number')
 
         try:
             socket_server.bind((host, port_number))
@@ -176,7 +176,7 @@ class PugdebugServerConnection(QObject):
         it is already called from a thread separate from the main application
         thread and thus should not block the main thread.
         """
-        idekey = get_setting('debugger/idekey')
+        idekey = settings.get('debugger/idekey')
 
         response = self.__receive_message()
 
@@ -442,21 +442,21 @@ class PugdebugServerConnection(QObject):
         return self.parser.parse_eval_message(response)
 
     def __set_debugger_features(self):
-        max_depth = get_setting('debugger/max_depth')
+        max_depth = settings.get('debugger/max_depth')
         command = 'feature_set -i %d -n max_depth -v %d' % (
             self.__get_transaction_id(),
             max_depth
         )
         self.__send_command(command)
 
-        max_children = get_setting('debugger/max_children')
+        max_children = settings.get('debugger/max_children')
         command = 'feature_set -i %d -n max_children -v %d' % (
             self.__get_transaction_id(),
             max_children
         )
         self.__send_command(command)
 
-        max_data = get_setting('debugger/max_data')
+        max_data = settings.get('debugger/max_data')
         command = 'feature_set -i %d -n max_data -v %d' % (
             self.__get_transaction_id(),
             max_data

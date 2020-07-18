@@ -16,7 +16,7 @@ from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (QMenu, QWidget, QTreeWidget, QTreeWidgetItem,
                              QAction, QToolBar, QVBoxLayout, QAbstractItemView)
 
-from pugdebug.models.settings import get_setting, set_setting
+from pugdebug import settings
 
 
 class PugdebugExpressionViewer(QWidget):
@@ -215,11 +215,11 @@ class PugdebugExpressionViewer(QWidget):
 
     def save_state(self):
         """Save current expressions to settings"""
-        set_setting('expressions_viewer/expressions', self.get_expressions())
+        settings.set('expressions_viewer/expressions', self.get_expressions())
 
     def restore_state(self):
         """Load expressions from settings"""
-        expressions = get_setting('expressions_viewer/expressions')
+        expressions = settings.get('expressions_viewer/expressions')
 
         if type(expressions) is list:
             for expression in expressions:

@@ -24,8 +24,7 @@ from pugdebug.gui.document import PugdebugDocument
 from pugdebug.models.documents import PugdebugDocuments
 from pugdebug.models.file_browser import PugdebugFileBrowser
 from pugdebug.models.projects import PugdebugProjects
-from pugdebug.models.settings import (get_setting, set_setting,
-                                      save_settings, has_setting)
+from pugdebug import settings
 
 
 class Pugdebug(QObject):
@@ -74,7 +73,7 @@ class Pugdebug(QObject):
         not needed columns.
         """
 
-        project_root = get_setting('path/project_root')
+        project_root = settings.get('path/project_root')
         model = PugdebugFileBrowser(self)
 
         self.file_browser.setModel(model)
@@ -318,9 +317,9 @@ class Pugdebug(QObject):
 
         logging.debug("Loading project %s" % project_name)
 
-        set_setting('current_project', project_name)
+        settings.set('current_project', project_name)
 
-        changed_settings = save_settings(project_settings)
+        changed_settings = settings.save(project_settings)
 
         self.handle_settings_changed(changed_settings)
 
@@ -485,8 +484,8 @@ class Pugdebug(QObject):
         """
         logging.debug("Settings changed")
 
-        if has_setting('current_project'):
-            project_name = get_setting('current_project')
+        if settings.has('current_project'):
+            project_name = settings.get('current_project')
 
             project = self.projects_browser.load_project_by_name(project_name)
 
@@ -520,7 +519,7 @@ class Pugdebug(QObject):
 
         Update the file browser's model to the new root.
         """
-        project_root = get_setting('path/project_root')
+        project_root = settings.get('path/project_root')
 
         logging.debug("Project root changed: %s" % project_root)
 
@@ -550,7 +549,7 @@ class Pugdebug(QObject):
         """
         logging.debug("Start listening")
 
-        break_at_first_line = get_setting('debugger/break_at_first_line')
+        break_at_first_line = settings.get('debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
             'Yes' if break_at_first_line else 'No'
@@ -628,7 +627,7 @@ class Pugdebug(QObject):
         If the code should not break at first line, run the debugger.
         """
         logging.debug("Post start")
-        break_at_first_line = get_setting('debugger/break_at_first_line')
+        break_at_first_line = settings.get('debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
             'Yes' if break_at_first_line else 'No'
@@ -966,7 +965,7 @@ class Pugdebug(QObject):
 
         Turns a path like /var/www into /home/user/local/path
         """
-        path_map = get_setting('path/path_mapping')
+        path_map = settings.get('path/path_mapping')
         if (len(path_map) > 0 and
                 map_paths is True and
                 path.find(path_map) == 0):
@@ -984,7 +983,7 @@ class Pugdebug(QObject):
 
         Turns a path like /home/user/local/path to /var/www
         """
-        path_map = get_setting('path/path_mapping')
+        path_map = settings.get('path/path_mapping')
         root_path = self.file_browser.model().rootPath()
 
         if len(path_map) > 0 and path.find(root_path) == 0:

@@ -18,7 +18,7 @@ from PyQt5.QtGui import (QColor, QTextFormat, QTextCursor, QPainter,
                          QTextBlockUserData, QFont, QKeySequence)
 
 from pugdebug.syntaxer import PugdebugSyntaxer
-from pugdebug.models.settings import get_setting
+from pugdebug import settings
 
 
 class PugdebugDocument(QPlainTextEdit):
@@ -60,15 +60,15 @@ class PugdebugDocument(QPlainTextEdit):
         self.shortcut_move_to_line.activated.connect(self.show_move_to_line)
 
     def set_editor_features(self):
-        font = QFont(get_setting('editor/font_family'))
-        font.setPointSize(get_setting('editor/font_size'))
+        font = QFont(settings.get('editor/font_family'))
+        font.setPointSize(settings.get('editor/font_size'))
         self.setFont(font)
 
         self.setTabStopWidth(self.fontMetrics().width(' ') *
-                             get_setting('editor/tab_size'))
+                             settings.get('editor/tab_size'))
 
         wrapMode = (QPlainTextEdit.WidgetWidth
-                    if get_setting('editor/enable_text_wrapping')
+                    if settings.get('editor/enable_text_wrapping')
                     else QPlainTextEdit.NoWrap)
         self.setLineWrapMode(wrapMode)
 

@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (QDialog, QLineEdit, QVBoxLayout, QFormLayout,
                              QListWidget, QAbstractItemView)
 
 from pugdebug.models.file_search import PugdebugFileSearch
-from pugdebug.models.settings import get_setting
+from pugdebug import settings
 
 
 class PugdebugFileSearchWindow(QDialog):
@@ -35,7 +35,7 @@ class PugdebugFileSearchWindow(QDialog):
         self.resize(500, 250)
 
     def exec(self):
-        self.project_root = get_setting('path/project_root')
+        self.project_root = settings.get('path/project_root')
         self.file_search = PugdebugFileSearch(self, self.project_root)
         super(PugdebugFileSearchWindow, self).exec()
 

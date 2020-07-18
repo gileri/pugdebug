@@ -14,9 +14,7 @@ import os
 from PyQt5.QtCore import QCoreApplication, QSettings
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
-from pugdebug.models.settings import (get_projects, delete_project,
-                                      get_setting, has_setting,
-                                      remove_setting)
+from pugdebug import settings
 
 
 class PugdebugProject(QSettings):
@@ -41,8 +39,8 @@ class PugdebugProject(QSettings):
         return self.project_name
 
     def is_project_current(self):
-        if has_setting('current_project'):
-            current_project = get_setting('current_project')
+        if settings.has('current_project'):
+            current_project = settings.get('current_project')
 
             if current_project == self.get_project_name():
                 return True
@@ -53,7 +51,7 @@ class PugdebugProject(QSettings):
         project_settings = {}
 
         for key in self.allKeys():
-            if has_setting(key):
+            if settings.has(key):
                 project_settings[key] = self.value(key)
 
         return project_settings
@@ -64,9 +62,9 @@ class PugdebugProject(QSettings):
 
     def delete(self):
         if self.is_project_current():
-            remove_setting('current_project')
+            settings.remove('current_project')
 
-        delete_project(self.get_project_name())
+        settings.delete_project(self.get_project_name())
 
         filename = self.fileName()
         try:
@@ -87,7 +85,7 @@ class PugdebugProjects(QStandardItemModel):
 
         self.setHorizontalHeaderLabels(['Name'])
 
-        for project in get_projects():
+        for project in settings.get_projects():
             item = QStandardItem(project)
             item.setEditable(False)
             self.appendRow(item)

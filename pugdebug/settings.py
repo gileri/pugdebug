@@ -1,29 +1,15 @@
 # -*- coding: utf-8 -*-
 
-"""
-    pugdebug - a standalone PHP debugger
-    =========================
-    copyright: (c) 2015 Robert Basic
-    license: GNU GPL v3, see LICENSE for more details
-"""
-
-__author__ = "robertbasic"
-
 import os
+import builtins
 
 from PyQt5.QtCore import QCoreApplication, QSettings
 from PyQt5.QtGui import QFont, QFontInfo
 
 
-class PugdebugSettings():
+class Settings:
 
     def __init__(self):
-        """Model object to handle application settings
-
-        Sets up initial application settings.
-
-        QSettings promises to work cross-platform.
-        """
         self.settings_info = {
             'debugger/host': dict(type=str, default='127.0.0.1'),
             'debugger/port_number': dict(type=int, default=9000),
@@ -44,11 +30,11 @@ class PugdebugSettings():
             'editor/enable_text_wrapping': dict(type=bool, default=False),
         }
 
-        QCoreApplication.setOrganizationName("pugdebug")
+        QCoreApplication.setOrganizationName('pugdebug')
         QCoreApplication.setOrganizationDomain(
-            "http://github.com/robertbasic/pugdebug"
-        )
-        QCoreApplication.setApplicationName("pugdebug")
+            'http://github.com/robertbasic/pugdebug')
+        QCoreApplication.setApplicationName('pugdebug')
+
         self.application_settings = QSettings()
 
     def get(self, key):
@@ -91,6 +77,16 @@ class PugdebugSettings():
 
     def remove(self, key):
         return self.application_settings.remove(key)
+
+    def save(self, new_settings):
+        changed_settings = {}
+
+        for key, value in new_settings.items():
+            if not self.has(key) or self.get(key) != value:
+                self.set(key, value)
+                changed_settings[key] = value
+
+        return changed_settings
 
     def add_project(self, project):
         index = self.__get_next_index(project)
@@ -148,7 +144,7 @@ class PugdebugSettings():
     def __reindex_projects_array(self):
         size = self.application_settings.beginReadArray('projects')
 
-        projects = set()
+        projects = builtins.set()
         for i in range(0, size):
             self.application_settings.setArrayIndex(i)
             project = self.application_settings.value('projects')
@@ -171,48 +167,40 @@ class PugdebugSettings():
         self.application_settings.endArray()
 
 
-settings = PugdebugSettings()
+instance = Settings()
 
 
-def get_setting(key):
-    return settings.get(key)
+def get(key):
+    return instance.get(key)
 
 
-def get_default_setting(key):
-    return settings.get_default(key)
+def get_default(key):
+    return instance.get_default(key)
 
 
-def has_setting(key):
-    return settings.has(key)
+def has(key):
+    return instance.has(key)
 
 
-def set_setting(key, value):
-    settings.set(key, value)
+def set(key, value):
+    return instance.set(key, value)
 
 
-def remove_setting(key):
-    settings.remove(key)
+def remove(key):
+    return instance.remove(key)
 
 
-def save_settings(new_settings):
-    changed_settings = {}
-
-    for key in new_settings:
-        value = new_settings[key]
-        if not has_setting(key) or get_setting(key) != value:
-            set_setting(key, value)
-            changed_settings[key] = value
-
-    return changed_settings
+def save(new_settings):
+    return instance.save(new_settings)
 
 
 def add_project(project):
-    settings.add_project(project)
+    return instance.add_project(project)
 
 
 def delete_project(project):
-    settings.delete_project(project)
+    return instance.delete_project(project)
 
 
 def get_projects():
-    return settings.get_projects()
+    return instance.get_projects()

@@ -25,7 +25,7 @@ from pugdebug.gui.stacktraces import PugdebugStacktraceViewer
 from pugdebug.gui.breakpoints import PugdebugBreakpointViewer
 from pugdebug.gui.expressions import PugdebugExpressionViewer
 from pugdebug.gui.statusbar import PugdebugStatusBar
-from pugdebug.models.settings import get_setting, set_setting, has_setting
+from pugdebug import settings
 
 
 class PugdebugMainWindow(QMainWindow):
@@ -38,8 +38,8 @@ class PugdebugMainWindow(QMainWindow):
         self.setObjectName("pugdebug")
         self.setWindowTitle("pugdebug")
 
-        if has_setting("window/geometry"):
-            self.restoreGeometry(get_setting("window/geometry"))
+        if settings.has('window/geometry'):
+            self.restoreGeometry(settings.get('window/geometry'))
 
         self.file_browser = PugdebugFileBrowser()
         self.projects_browser = PugdebugProjectsBrowser()
@@ -56,18 +56,18 @@ class PugdebugMainWindow(QMainWindow):
 
         self.setup_gui_elements()
 
-        if has_setting("window/state"):
-            self.restoreState(get_setting("window/state"))
+        if settings.has('window/state'):
+            self.restoreState(settings.get('window/state'))
 
-        self.set_window_title(get_setting("current_project"))
+        self.set_window_title(settings.get('current_project'))
 
         self.projects_browser.project_deleted_signal.connect(
             self.handle_project_deleted
         )
 
     def closeEvent(self, event):
-        set_setting("window/geometry", self.saveGeometry())
-        set_setting("window/state", self.saveState())
+        settings.set('window/geometry', self.saveGeometry())
+        settings.set('window/state', self.saveState())
 
         super(PugdebugMainWindow, self).closeEvent(event)
 

@@ -17,7 +17,7 @@ from PyQt5.QtGui import QIcon, QKeySequence
 
 from pugdebug.gui.forms import PugdebugSettingsForm
 from pugdebug.models.projects import PugdebugProject
-from pugdebug.models.settings import get_default_setting, add_project
+from pugdebug import settings
 
 
 class PugdebugNewProjectWindow(QDialog):
@@ -72,14 +72,14 @@ class PugdebugNewProjectWindow(QDialog):
 
         project_name = project.get_project_name()
 
-        add_project(project_name)
+        settings.add_project(project_name)
 
         self.parent.new_project_created_signal.emit(project_name)
 
     def load_settings(self):
         """Load default settings into the form"""
         for name, widget in self.form.widgets.items():
-            value = get_default_setting(name)
+            value = settings.get_default(name)
             self.form.set_widget_value(widget, value)
 
 
