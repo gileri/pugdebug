@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import (QMainWindow, QToolBar, QMenuBar, QDockWidget,
                              QAction)
 from PyQt5.QtGui import QKeySequence
 
-from pugdebug.gui.file_browser import PugdebugFileBrowser
 from pugdebug.gui.settings import PugdebugSettingsWindow
 from pugdebug.gui.projects import (PugdebugNewProjectWindow,
                                    PugdebugProjectsBrowser)
@@ -25,7 +24,7 @@ from pugdebug.gui.stacktraces import PugdebugStacktraceViewer
 from pugdebug.gui.breakpoints import PugdebugBreakpointViewer
 from pugdebug.gui.expressions import PugdebugExpressionViewer
 from pugdebug.gui.statusbar import PugdebugStatusBar
-from pugdebug import settings
+from pugdebug import settings, file_browser
 
 
 class PugdebugMainWindow(QMainWindow):
@@ -41,7 +40,7 @@ class PugdebugMainWindow(QMainWindow):
         if settings.has('window/geometry'):
             self.restoreGeometry(settings.get('window/geometry'))
 
-        self.file_browser = PugdebugFileBrowser()
+        self.file_browser = file_browser.FileBrowserView()
         self.projects_browser = PugdebugProjectsBrowser()
         self.settings_window = PugdebugSettingsWindow(self)
         self.new_project_window = PugdebugNewProjectWindow(self)

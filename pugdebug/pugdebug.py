@@ -21,9 +21,8 @@ from pugdebug.debugger import PugdebugDebugger
 from pugdebug.gui.main_window import PugdebugMainWindow
 from pugdebug.gui.document import PugdebugDocument
 from pugdebug.models.documents import PugdebugDocuments
-from pugdebug.models.file_browser import PugdebugFileBrowser
 from pugdebug.models.projects import PugdebugProjects
-from pugdebug import settings
+from pugdebug import settings, file_browser
 
 
 class Pugdebug(QObject):
@@ -64,17 +63,9 @@ class Pugdebug(QObject):
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     def setup_file_browser(self):
-        """Setup the file browser
-
-        Sets the model on the file browser and hides the
-        not needed columns.
-        """
-
         project_root = settings.get('path/project_root')
-        model = PugdebugFileBrowser(self)
-
-        self.file_browser.setModel(model)
-        self.file_browser.set_path(project_root)
+        file_browser.set_root_path(project_root)
+        file_browser.file_activated_signal().connect(self.open_local_document)
 
     def setup_projects_browser(self):
         """Setup the projects browser
@@ -88,11 +79,10 @@ class Pugdebug(QObject):
     def connect_signals(self):
         """Connect all signals to their slots
 
-        Connect file browser signals, settings signals, document viewer signals
+        Connect settings signals, document viewer signals
         toolbar action signals, debugger signals.
         """
 
-        self.connect_file_browser_signals()
         self.connect_projects_browser_signals()
         self.connect_search_files_signals()
         self.connect_settings_signals()
@@ -103,14 +93,6 @@ class Pugdebug(QObject):
         self.connect_expression_viewer_signals()
         self.connect_stacktrace_viewer_signals()
         self.connect_breakpoint_viewer_signals()
-
-    def connect_file_browser_signals(self):
-        """Connect file browser signals
-
-        Connects the file browser's activated signal to the
-        slot that gets called when a file browser item is activated.
-        """
-        self.file_browser.activated.connect(self.file_browser_item_activated)
 
     def connect_projects_browser_signals(self):
         """Connect projects browser signals
@@ -322,17 +304,8 @@ class Pugdebug(QObject):
 
         self.main_window.set_window_title(project_name)
 
-    def file_browser_item_activated(self, index):
-        """Handle when file browser item gets activated
-
-        Find the path of the activated item and open that document.
-        """
-        path = self.file_browser.model().get_file_path(index)
-
-        logging.debug("Trying to open path %s" % path)
-
-        if path is not None:
-            self.open_document(path, False)
+    def open_local_document(self, path):
+        return self.open_document(path, False)
 
     def open_document(self, path, map_paths=True):
         """Open a document
@@ -512,13 +485,13 @@ class Pugdebug(QObject):
     def handle_project_root_changed(self):
         """Handle when the project root is changed
 
-        Update the file browser's model to the new root.
+        Update the file browser to the new root.
         """
         project_root = settings.get('path/project_root')
 
         logging.debug("Project root changed: %s" % project_root)
 
-        self.file_browser.set_path(project_root)
+        file_browser.set_root_path(project_root)
 
     def handle_debugger_features_changed(self):
         logging.debug("Debugger features changed")
@@ -966,7 +939,7 @@ class Pugdebug(QObject):
                 path.find(path_map) == 0):
             path_map = path_map.rstrip('/')
             path = path[len(path_map):]
-            path = "%s%s" % (self.file_browser.model().rootPath(), path)
+            path = "%s%s" % (file_browser.get_root_path(), path)
 
             if not os.path.isfile(path):
                 return False
@@ -979,7 +952,7 @@ class Pugdebug(QObject):
         Turns a path like /home/user/local/path to /var/www
         """
         path_map = settings.get('path/path_mapping')
-        root_path = self.file_browser.model().rootPath()
+        root_path = file_browser.get_root_path()
 
         if len(path_map) > 0 and path.find(root_path) == 0:
             path_map = path_map.rstrip('/')
