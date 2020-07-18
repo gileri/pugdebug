@@ -17,8 +17,7 @@ from PyQt5.QtWidgets import (QWidget, QPlainTextEdit, QTextEdit,
 from PyQt5.QtGui import (QColor, QTextFormat, QTextCursor, QPainter,
                          QTextBlockUserData, QFont, QKeySequence)
 
-from pugdebug.syntaxer import PugdebugSyntaxer
-from pugdebug import settings
+from pugdebug import settings, syntaxer
 
 
 class PugdebugDocument(QPlainTextEdit):
@@ -30,7 +29,7 @@ class PugdebugDocument(QPlainTextEdit):
 
     document_double_clicked_signal = pyqtSignal(str, int)
 
-    def __init__(self, document_model, formatter):
+    def __init__(self, document_model):
         super().__init__()
 
         self.set_editor_features()
@@ -49,7 +48,7 @@ class PugdebugDocument(QPlainTextEdit):
 
         self.remove_line_highlights()
 
-        self.syntaxer = PugdebugSyntaxer(self.document(), formatter)
+        self.syntaxer = syntaxer.Syntaxer(self.document())
 
         self.viewport().setCursor(Qt.ArrowCursor)
 

@@ -18,7 +18,6 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QErrorMessage, QMessageBox
 
 from pugdebug.debugger import PugdebugDebugger
-from pugdebug.syntaxer import PugdebugFormatter
 from pugdebug.gui.main_window import PugdebugMainWindow
 from pugdebug.gui.document import PugdebugDocument
 from pugdebug.models.documents import PugdebugDocuments
@@ -42,8 +41,6 @@ class Pugdebug(QObject):
         super(Pugdebug, self).__init__()
 
         self.debugger = PugdebugDebugger()
-
-        self.formatter = PugdebugFormatter(style='default')
 
         # UI elements
         self.main_window = PugdebugMainWindow()
@@ -358,10 +355,8 @@ class Pugdebug(QObject):
             logging.debug("Opening new document")
             document_model = self.documents.open_document(path)
 
-            document_widget = PugdebugDocument(
-                document_model,
-                self.formatter
-            )
+            document_widget = PugdebugDocument(document_model)
+
             # For every new document that gets opened, connect to the double
             # clicked signal of that document
             document_widget.document_double_clicked_signal.connect(

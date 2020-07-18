@@ -1,37 +1,30 @@
 # -*- coding: utf-8 -*-
 
-"""
-    pugdebug - a standalone PHP debugger
-    =========================
-    copyright: (c) 2015 Robert Basic
-    license: GNU GPL v3, see LICENSE for more details
-"""
-
-__author__ = "robertbasic"
-
-from pygments import highlight, formatter
-from pygments.lexers.php import PhpLexer
+import pygments
+import pygments.formatter
+import pygments.lexers.php
 
 from PyQt5.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
 
 
-class PugdebugSyntaxer(QSyntaxHighlighter):
+class Syntaxer(QSyntaxHighlighter):
 
     formatter = None
-    lexer = None
 
-    def __init__(self, document, formatter):
-        super(PugdebugSyntaxer, self).__init__(document)
+    def __init__(self, document):
+        super().__init__(document)
 
-        self.formatter = formatter
-        self.lexer = PhpLexer()
+        if Syntaxer.formatter is None:
+            Syntaxer.formatter = Formatter(style='default')
+
+        self.lexer = pygments.lexers.php.PhpLexer()
 
         self.highlight()
 
     def highlight(self):
         document = self.document()
         self.formatter.document = document
-        highlight(document.toPlainText(), self.lexer, self.formatter)
+        pygments.highlight(document.toPlainText(), self.lexer, self.formatter)
 
     def highlightBlock(self, text):
         block_number = self.currentBlock().blockNumber()
@@ -47,16 +40,13 @@ class PugdebugSyntaxer(QSyntaxHighlighter):
             start += count
 
 
-class PugdebugFormatter(formatter.Formatter):
-
-    styles = {}
-
-    formats = {}
-
-    document = None
+class Formatter(pygments.formatter.Formatter):
 
     def __init__(self, **options):
-        super(PugdebugFormatter, self).__init__(**options)
+        super().__init__(**options)
+
+        self.styles = {}
+        self.formats = {}
 
         for token, style in self.style:
             format = QTextCharFormat()
@@ -72,15 +62,6 @@ class PugdebugFormatter(formatter.Formatter):
 
             self.styles[token] = format
 
-    def __add_block_format(self, block_number, count, token):
-        if block_number not in self.formats:
-            self.formats[block_number] = []
-
-        self.formats[block_number].append({
-            'count': count,
-            'token': token
-        })
-
     def format(self, tokensource, outfile):
         """Format source file
 
@@ -88,6 +69,7 @@ class PugdebugFormatter(formatter.Formatter):
         """
         # Formats for every block, block by block
         self.formats = {}
+
         # Current position in the source
         current_position = 0
 
@@ -117,3 +99,12 @@ class PugdebugFormatter(formatter.Formatter):
                 self.__add_block_format(start_block_number, len(value), token)
 
             current_position = next_position
+
+    def __add_block_format(self, block_number, count, token):
+        if block_number not in self.formats:
+            self.formats[block_number] = []
+
+        self.formats[block_number].append({
+            'count': count,
+            'token': token
+        })
