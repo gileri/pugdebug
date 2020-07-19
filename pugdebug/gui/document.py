@@ -15,9 +15,9 @@ from PyQt5.QtCore import pyqtSignal, Qt, QRect, QSize
 from PyQt5.QtWidgets import (QWidget, QPlainTextEdit, QTextEdit,
                              QShortcut, QInputDialog)
 from PyQt5.QtGui import (QColor, QTextFormat, QTextCursor, QPainter,
-                         QTextBlockUserData, QFont, QKeySequence)
+                         QFont, QKeySequence)
 
-from pugdebug import settings, syntaxer
+from pugdebug import settings, syntaxer, pugdebug
 
 
 class PugdebugDocument(QPlainTextEdit):
@@ -31,6 +31,8 @@ class PugdebugDocument(QPlainTextEdit):
 
     def __init__(self, document_model):
         super().__init__()
+
+        self.current_line = 0
 
         self.set_editor_features()
 
@@ -130,26 +132,36 @@ class PugdebugDocument(QPlainTextEdit):
             if not block.isVisible() or block_top > event.rect().bottom():
                 break
 
+            line_number = block_number + 1
+            painter.setPen(Qt.black)
+            painter.drawText(0, block_top,
+                             number_width, number_height,
+                             Qt.AlignRight, str(line_number))
+
+            # FIXME: Replace later with a corresponding method call from the
+            #        breakpoints module
+            block_has_breakpoint = False
+            document_path = self.document_model.path
+            for breakpoint in pugdebug.Pugdebug.breakpoints:
+                if (breakpoint['local_filename'] == document_path and
+                        int(breakpoint['lineno']) == line_number):
+                    block_has_breakpoint = True
+                    break
+
             # If block has a breakpoint,
             # draw a green rectangle by the line number
-            # if the block number matches the current line number
+            # if the line number matches the current line number
             # make it red, as it is then a breakpoint hit
-            if self.block_has_breakpoint(block):
+            if block_has_breakpoint:
                 brush = painter.brush()
                 brush.setStyle(Qt.SolidPattern)
-                if self.block_is_current(block):
+                if line_number == self.current_line:
                     brush.setColor(Qt.red)
                 else:
                     brush.setColor(Qt.darkGreen)
                 painter.setBrush(brush)
                 painter.drawRect(QRect(0, block_top + breakpoint_y_offset,
                                        breakpoint_size, breakpoint_size))
-
-            number_str = str(block_number + 1)
-            painter.setPen(Qt.black)
-            painter.drawText(0, block_top,
-                             number_width, number_height,
-                             Qt.AlignRight, number_str)
 
             block = block.next()
             block_number += 1
@@ -170,12 +182,6 @@ class PugdebugDocument(QPlainTextEdit):
         if len(block.text()) == 0:
             return
 
-        # Set/unset breakpoint flag on the double clicked line
-        if self.block_has_breakpoint(block):
-            self.block_remove_breakpoint(block)
-        else:
-            self.block_set_breakpoint(block)
-
         line_number = block.blockNumber() + 1
 
         self.document_double_clicked_signal.emit(path, line_number)
@@ -185,42 +191,16 @@ class PugdebugDocument(QPlainTextEdit):
 
     def move_to_line(self, line, is_current=True):
         """Move cursor to specified line
-
-        Move the cursor block by block until the block number matches
-        the line number.
         """
-        line = line - 1
-        if line < 0:
-            line = 0
-
-        cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.Start, QTextCursor.MoveAnchor, 0)
-
-        block_number = cursor.blockNumber()
-
-        while block_number < line:
-            cursor_moved = cursor.movePosition(
-                QTextCursor.NextBlock,
-                QTextCursor.MoveAnchor,
-                1
-            )
-
-            # Unmark block as current
-            block = cursor.block()
-            self.block_set_is_current(block, False)
-
-            if cursor_moved is False:
-                break
-
-            block_number = cursor.blockNumber()
-
-        # Mark block on which the cursor is as the current one
-        block = cursor.block()
-        self.block_set_is_current(block, is_current)
+        document = self.document()
+        line = min(max(line, 1), document.lineCount())
+        cursor = QTextCursor(document.findBlockByLineNumber(line - 1))
 
         self.setTextCursor(cursor)
 
-        self.rehighlight_breakpoint_lines()
+        if is_current:
+            self.current_line = line
+            self.rehighlight_breakpoint_lines()
 
     def highlight(self):
         selection = QTextEdit.ExtraSelection()
@@ -238,44 +218,15 @@ class PugdebugDocument(QPlainTextEdit):
     def remove_line_highlights(self):
         """Remove line highlights
 
-        Move the cursor to first (zero) line.
+        Move the cursor to first line.
 
         Clear the extra selections in the file.
-
-        Rehighlight breakpoint lines.
         """
-        self.setExtraSelections([])
-
+        self.current_line = 0
+        self.move_to_line(1, False)
         self.rehighlight_breakpoint_lines()
 
-    def block_has_breakpoint(self, block):
-        user_data = self.__get_block_user_data(block)
-        return user_data.breakpoint
-
-    def block_set_breakpoint(self, block):
-        user_data = self.__get_block_user_data(block)
-        user_data.breakpoint = True
-        block.setUserData(user_data)
-
-    def block_remove_breakpoint(self, block):
-        user_data = self.__get_block_user_data(block)
-        user_data.breakpoint = False
-        block.setUserData(user_data)
-
-    def block_is_current(self, block):
-        user_data = self.__get_block_user_data(block)
-        return user_data.is_current
-
-    def block_set_is_current(self, block, is_current):
-        user_data = self.__get_block_user_data(block)
-        user_data.is_current = is_current
-        block.setUserData(user_data)
-
-    def __get_block_user_data(self, block):
-        user_data = block.userData()
-        if user_data is None:
-            user_data = PugdebugBlockData()
-        return user_data
+        self.setExtraSelections([])
 
     def show_search_modal(self):
         text, ok = QInputDialog.getText(self, 'Search', 'Insert word')
@@ -283,7 +234,7 @@ class PugdebugDocument(QPlainTextEdit):
 
     def show_move_to_line(self):
         text, ok = QInputDialog.getText(self, 'Go To', 'Line number')
-        self.move_to_line(int(text), True)
+        self.move_to_line(int(text), False)
 
     def handle_document_changed(self, document_model):
         """Handle when a document gets changed
@@ -328,12 +279,3 @@ class PugdebugLineNumbers(QWidget):
 
     def paintEvent(self, event):
         self.document.paint_line_numbers(event)
-
-
-class PugdebugBlockData(QTextBlockUserData):
-
-    breakpoint = False
-    is_current = False
-
-    def __init__(self):
-        super(PugdebugBlockData, self).__init__()

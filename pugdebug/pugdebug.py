@@ -357,6 +357,7 @@ class Pugdebug(QObject):
         If there is no breakpoint set on that line, we set it.
         If there is a breakpoint set on that line, we remove it.
         """
+        local_path = path
         path = self.__get_path_mapped_to_remote(path)
 
         logging.debug("Getting a breakpoint on %s:%s" % (path, line_number))
@@ -365,7 +366,11 @@ class Pugdebug(QObject):
 
         if breakpoint is None:
             logging.debug("Setting breakpoint")
-            breakpoint = {'filename': path, 'lineno': line_number}
+            breakpoint = {
+                'filename': path,
+                'local_filename': local_path,
+                'lineno': line_number
+            }
             self.set_breakpoint(breakpoint)
         else:
             logging.debug("Removing breakpoint")
@@ -764,10 +769,8 @@ class Pugdebug(QObject):
 
             self.breakpoints.append(breakpoint)
 
-            path = breakpoint['filename']
-            path = self.__get_path_mapped_to_local(path)
-
-            document_widget = self.document_viewer.get_document_by_path(path)
+            document_widget = self.document_viewer.get_document_by_path(
+                breakpoint['local_filename'])
             document_widget.rehighlight_breakpoint_lines()
 
             self.breakpoint_viewer.set_breakpoints(self.breakpoints)
@@ -794,6 +797,7 @@ class Pugdebug(QObject):
             logging.debug("Debugger is not connected, removing breakpoint")
 
             path = breakpoint['filename']
+            local_path = breakpoint['local_filename']
             line_number = breakpoint['lineno']
 
             for breakpoint in self.breakpoints:
@@ -801,9 +805,8 @@ class Pugdebug(QObject):
                         breakpoint['lineno'] == line_number):
                     self.breakpoints.remove(breakpoint)
 
-            path = self.__get_path_mapped_to_local(path)
-
-            document_widget = self.document_viewer.get_document_by_path(path)
+            document_widget = self.document_viewer.get_document_by_path(
+                local_path)
             document_widget.rehighlight_breakpoint_lines()
 
             self.breakpoint_viewer.set_breakpoints(self.breakpoints)
@@ -831,7 +834,7 @@ class Pugdebug(QObject):
             lambda breakpoint: breakpoint['filename'] != remote_path,
             self.breakpoints
         ))
-        self.breakpoints = breakpoints
+        Pugdebug.breakpoints = breakpoints
 
         self.breakpoint_viewer.set_breakpoints(breakpoints)
 
@@ -890,13 +893,17 @@ class Pugdebug(QObject):
         """
         logging.debug("Breakpoints listed")
 
-        self.breakpoints = breakpoints
+        for breakpoint in breakpoints:
+            breakpoint['local_filename'] = self.__get_path_mapped_to_local(
+                breakpoint['filename'])
+
+        Pugdebug.breakpoints = breakpoints
 
         self.breakpoint_viewer.set_breakpoints(breakpoints)
 
         for breakpoint in breakpoints:
-            path = self.__get_path_mapped_to_local(breakpoint['filename'])
-            document_widget = self.document_viewer.get_document_by_path(path)
+            document_widget = self.document_viewer.get_document_by_path(
+                breakpoint['local_filename'])
             document_widget.rehighlight_breakpoint_lines()
 
     def handle_expression_evaluated(self, index, result):
