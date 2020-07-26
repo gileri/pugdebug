@@ -77,7 +77,7 @@ class PugdebugSettingsWindow(QDialog):
     def load_settings(self):
         """Loads all settings from QSettings into the form"""
         for name, widget in self.form.widgets.items():
-            self.form.set_widget_value(widget, settings.get(name))
+            self.form.set_widget_value(widget, settings.value(name))
 
     def save_settings(self):
         """Saves all settings from the form to QSettings"""

@@ -215,11 +215,12 @@ class PugdebugExpressionViewer(QWidget):
 
     def save_state(self):
         """Save current expressions to settings"""
-        settings.set('expressions_viewer/expressions', self.get_expressions())
+        settings.set_value('expressions_viewer/expressions',
+                           self.get_expressions())
 
     def restore_state(self):
         """Load expressions from settings"""
-        expressions = settings.get('expressions_viewer/expressions')
+        expressions = settings.value('expressions_viewer/expressions')
 
         if type(expressions) is list:
             for expression in expressions:

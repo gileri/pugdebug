@@ -61,15 +61,15 @@ class PugdebugDocument(QPlainTextEdit):
         self.shortcut_move_to_line.activated.connect(self.show_move_to_line)
 
     def set_editor_features(self):
-        font = QFont(settings.get('editor/font_family'))
-        font.setPointSize(settings.get('editor/font_size'))
+        font = QFont(settings.value('editor/font_family'))
+        font.setPointSize(settings.value('editor/font_size'))
         self.setFont(font)
 
         self.setTabStopWidth(self.fontMetrics().width(' ') *
-                             settings.get('editor/tab_size'))
+                             settings.value('editor/tab_size'))
 
         wrapMode = (QPlainTextEdit.WidgetWidth
-                    if settings.get('editor/enable_text_wrapping')
+                    if settings.value('editor/enable_text_wrapping')
                     else QPlainTextEdit.NoWrap)
         self.setLineWrapMode(wrapMode)
 

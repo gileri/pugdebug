@@ -40,7 +40,7 @@ class PugdebugProject(QSettings):
 
     def is_project_current(self):
         if settings.has('current_project'):
-            current_project = settings.get('current_project')
+            current_project = settings.value('current_project')
 
             if current_project == self.get_project_name():
                 return True

@@ -63,7 +63,7 @@ class Pugdebug(QObject):
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     def setup_file_browser(self):
-        project_root = settings.get('path/project_root')
+        project_root = settings.value('path/project_root')
         file_browser.set_root_path(project_root)
         file_browser.file_activated_signal().connect(self.open_local_document)
 
@@ -296,7 +296,7 @@ class Pugdebug(QObject):
 
         logging.debug("Loading project %s" % project_name)
 
-        settings.set('current_project', project_name)
+        settings.set_value('current_project', project_name)
 
         changed_settings = settings.save(project_settings)
 
@@ -458,7 +458,7 @@ class Pugdebug(QObject):
         logging.debug("Settings changed")
 
         if settings.has('current_project'):
-            project_name = settings.get('current_project')
+            project_name = settings.value('current_project')
 
             project = self.projects_browser.load_project_by_name(project_name)
 
@@ -492,7 +492,7 @@ class Pugdebug(QObject):
 
         Update the file browser to the new root.
         """
-        project_root = settings.get('path/project_root')
+        project_root = settings.value('path/project_root')
 
         logging.debug("Project root changed: %s" % project_root)
 
@@ -522,7 +522,7 @@ class Pugdebug(QObject):
         """
         logging.debug("Start listening")
 
-        break_at_first_line = settings.get('debugger/break_at_first_line')
+        break_at_first_line = settings.value('debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
             'Yes' if break_at_first_line else 'No'
@@ -600,7 +600,7 @@ class Pugdebug(QObject):
         If the code should not break at first line, run the debugger.
         """
         logging.debug("Post start")
-        break_at_first_line = settings.get('debugger/break_at_first_line')
+        break_at_first_line = settings.value('debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
             'Yes' if break_at_first_line else 'No'
@@ -940,7 +940,7 @@ class Pugdebug(QObject):
 
         Turns a path like /var/www into /home/user/local/path
         """
-        path_map = settings.get('path/path_mapping')
+        path_map = settings.value('path/path_mapping')
         if (len(path_map) > 0 and
                 map_paths is True and
                 path.find(path_map) == 0):
@@ -958,7 +958,7 @@ class Pugdebug(QObject):
 
         Turns a path like /home/user/local/path to /var/www
         """
-        path_map = settings.get('path/path_mapping')
+        path_map = settings.value('path/path_mapping')
         root_path = file_browser.get_root_path()
 
         if len(path_map) > 0 and path.find(root_path) == 0:

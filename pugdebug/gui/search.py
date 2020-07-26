@@ -35,7 +35,7 @@ class PugdebugFileSearchWindow(QDialog):
         self.resize(500, 250)
 
     def exec(self):
-        self.project_root = settings.get('path/project_root')
+        self.project_root = settings.value('path/project_root')
         self.file_search = PugdebugFileSearch(self, self.project_root)
         super(PugdebugFileSearchWindow, self).exec()
 

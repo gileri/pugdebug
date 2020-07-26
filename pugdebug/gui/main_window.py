@@ -37,8 +37,7 @@ class PugdebugMainWindow(QMainWindow):
         self.setObjectName("pugdebug")
         self.setWindowTitle("pugdebug")
 
-        if settings.has('window/geometry'):
-            self.restoreGeometry(settings.get('window/geometry'))
+        self.restoreGeometry(settings.value('window/geometry'))
 
         self.file_browser = file_browser.FileBrowserView()
         self.projects_browser = PugdebugProjectsBrowser()
@@ -55,18 +54,17 @@ class PugdebugMainWindow(QMainWindow):
 
         self.setup_gui_elements()
 
-        if settings.has('window/state'):
-            self.restoreState(settings.get('window/state'))
+        self.restoreState(settings.value('window/state'))
 
-        self.set_window_title(settings.get('current_project'))
+        self.set_window_title(settings.value('current_project'))
 
         self.projects_browser.project_deleted_signal.connect(
             self.handle_project_deleted
         )
 
     def closeEvent(self, event):
-        settings.set('window/geometry', self.saveGeometry())
-        settings.set('window/state', self.saveState())
+        settings.set_value('window/geometry', self.saveGeometry())
+        settings.set_value('window/state', self.saveState())
 
         super(PugdebugMainWindow, self).closeEvent(event)
 
