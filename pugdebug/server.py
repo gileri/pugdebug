@@ -16,7 +16,7 @@ from PyQt5.QtCore import (QObject, QThread, QThreadPool, QRunnable,
                           QMutex, pyqtSignal)
 
 from pugdebug.message_parser import PugdebugMessageParser
-from pugdebug import settings
+from pugdebug import settings, projects
 
 
 class PugdebugServer(QThread):
@@ -72,8 +72,9 @@ class PugdebugServer(QThread):
 
         Otherwise silently disregard that connection.
         """
-        host = settings.value('debugger/host')
-        port_number = settings.value('debugger/port_number')
+        with settings.open_group('project/' + projects.active()):
+            host = settings.value('debugger/host')
+            port_number = settings.value('debugger/port_number')
 
         try:
             socket_server.bind((host, port_number))
@@ -176,7 +177,8 @@ class PugdebugServerConnection(QObject):
         it is already called from a thread separate from the main application
         thread and thus should not block the main thread.
         """
-        idekey = settings.value('debugger/idekey')
+        idekey = settings.value('project/' + projects.active() +
+                                '/debugger/idekey')
 
         response = self.__receive_message()
 
@@ -442,21 +444,23 @@ class PugdebugServerConnection(QObject):
         return self.parser.parse_eval_message(response)
 
     def __set_debugger_features(self):
-        max_depth = settings.value('debugger/max_depth')
+        with settings.open_group('project/' + projects.active()):
+            max_depth = settings.value('debugger/max_depth')
+            max_children = settings.value('debugger/max_children')
+            max_data = settings.value('debugger/max_data')
+
         command = 'feature_set -i %d -n max_depth -v %d' % (
             self.__get_transaction_id(),
             max_depth
         )
         self.__send_command(command)
 
-        max_children = settings.value('debugger/max_children')
         command = 'feature_set -i %d -n max_children -v %d' % (
             self.__get_transaction_id(),
             max_children
         )
         self.__send_command(command)
 
-        max_data = settings.value('debugger/max_data')
         command = 'feature_set -i %d -n max_data -v %d' % (
             self.__get_transaction_id(),
             max_data

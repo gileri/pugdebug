@@ -13,6 +13,7 @@ from collections import deque
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from pugdebug.server import PugdebugServer
+from pugdebug import projects
 
 
 class PugdebugDebugger(QObject):
@@ -55,6 +56,8 @@ class PugdebugDebugger(QObject):
         self.server = PugdebugServer()
 
         self.connect_server_signals()
+
+        projects.active_project_changed().connect(self.set_debugger_features)
 
     def connect_server_signals(self):
         """Connect server signals to slots
@@ -328,7 +331,8 @@ class PugdebugDebugger(QObject):
         self.expressions_evaluated_signal.emit(results)
 
     def set_debugger_features(self):
-        self.current_connection.set_debugger_features()
+        if self.is_connected():
+            self.current_connection.set_debugger_features()
 
     def handle_server_error(self, error):
         """Handle when an error occurs in the server

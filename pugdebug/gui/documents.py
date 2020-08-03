@@ -12,6 +12,8 @@ __author__ = "robertbasic"
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QTabWidget, QTabBar
 
+from pugdebug import settings
+
 
 class PugdebugDocumentViewer(QTabWidget):
 
@@ -26,6 +28,8 @@ class PugdebugDocumentViewer(QTabWidget):
         self.setTabBar(self.tab_bar)
 
         self.setTabsClosable(True)
+
+        settings.edit_dialog_saved().connect(self.update_editor_features)
 
     def add_tab(self, document_widget, filename, path):
         tab_index = self.addTab(document_widget, filename)
@@ -72,15 +76,13 @@ class PugdebugDocumentViewer(QTabWidget):
         index = self.find_tab_index_by_path(path)
         return self.widget(index)
 
-    def get_all_documents(self):
-        documents = []
-        for i, p in self.tabs.items():
-            documents.append(self.widget(i))
-        return documents
-
     def remove_line_highlights(self):
         for index, path in self.tabs.items():
             self.widget(index).remove_line_highlights()
+
+    def update_editor_features(self):
+        for index, path in self.tabs.items():
+            self.widget(index).update_editor_features()
 
 
 class PugdebugTabBar(QTabBar):

@@ -34,7 +34,7 @@ class PugdebugDocument(QPlainTextEdit):
 
         self.current_line = 0
 
-        self.set_editor_features()
+        self.update_editor_features()
 
         self.line_numbers = PugdebugLineNumbers(self)
         self.blockCountChanged.connect(self.update_line_numbers_width)
@@ -60,7 +60,7 @@ class PugdebugDocument(QPlainTextEdit):
         self.shortcut_move_to_line = QShortcut(QKeySequence("Ctrl+G"), self)
         self.shortcut_move_to_line.activated.connect(self.show_move_to_line)
 
-    def set_editor_features(self):
+    def update_editor_features(self):
         font = QFont(settings.value('editor/font_family'))
         font.setPointSize(settings.value('editor/font_size'))
         self.setFont(font)
@@ -247,9 +247,6 @@ class PugdebugDocument(QPlainTextEdit):
 
         self.syntaxer.setDocument(self.document())
         self.syntaxer.highlight()
-
-    def handle_editor_features_changed(self):
-        self.set_editor_features()
 
     def get_path(self):
         return self.document_model.path

@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
 
 import os
+from contextlib import contextmanager
 
-from PyQt5.QtCore import QCoreApplication, QSettings, QByteArray
+from PyQt5.QtCore import (Qt, pyqtSignal, QCoreApplication, QSettings,
+                          QByteArray)
 from PyQt5.QtGui import QFont, QFontInfo
+from PyQt5.QtWidgets import (QDialog, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QFormLayout, QSpinBox, QCheckBox, QFontComboBox,
+                             QGroupBox)
+
+from pugdebug import projects
 
 
 class Settings(QSettings):
+
+    edit_dialog_saved = pyqtSignal()
 
     def __init__(self):
         QCoreApplication.setOrganizationName('pugdebug')
@@ -19,6 +28,10 @@ class Settings(QSettings):
         self.setFallbacksEnabled(False)
 
         self.settings_info = {
+            'active_project': {
+                'type': str,
+                'default': 'default'
+            },
             'window': {
                 'geometry': {
                     'type': QByteArray,
@@ -89,50 +102,6 @@ class Settings(QSettings):
                     },
                 },
             },
-
-            # FIXME: deprecated!!!
-            'path': {
-                'project_root': {
-                    'type': str,
-                    'default': os.path.expanduser('~'),
-                },
-                'path_mapping': {
-                    'type': str,
-                    'default': '',
-                },
-            },
-
-            # FIXME: deprecated!!!
-            'debugger': {
-                'host': {
-                    'type': str,
-                    'default': '127.0.0.1',
-                },
-                'port_number': {
-                    'type': int,
-                    'default': 9000,
-                },
-                'idekey': {
-                    'type': str,
-                    'default': 'pugdebug',
-                },
-                'break_at_first_line': {
-                    'type': bool,
-                    'default': True,
-                },
-                'max_depth': {
-                    'type': int,
-                    'default': 3,
-                },
-                'max_children': {
-                    'type': int,
-                    'default': 128,
-                },
-                'max_data': {
-                    'type': int,
-                    'default': 512,
-                },
-            },
         }
 
         self.settings_info_cache = {}
@@ -177,6 +146,14 @@ class Settings(QSettings):
         font.setStyleHint(QFont.Monospace)
         return QFontInfo(font).family()
 
+    @contextmanager
+    def open_group(self, prefix):
+        self.beginGroup(prefix)
+        try:
+            yield None
+        finally:
+            self.endGroup()
+
     def value(self, key):
         info = self.get_info(key)
         if not info:
@@ -202,7 +179,94 @@ class Settings(QSettings):
         return super().setValue(key, value)
 
 
+class SettingsEditDialog(QDialog):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setModal(True)
+        self.setWindowTitle('Settings')
+        self.setMinimumWidth(400)
+
+        self.accepted.connect(self.save)
+
+        # Editor group
+
+        self.font_family_input = QFontComboBox()
+
+        self.font_size_input = QSpinBox()
+        self.font_size_input.setRange(8, 24)
+        self.font_size_input.setSuffix(' pt')
+
+        self.tab_size_input = QSpinBox()
+        self.tab_size_input.setRange(1, 16)
+        self.tab_size_input.setSuffix(' spaces')
+
+        self.enable_text_wrapping_input = QCheckBox('Enable text wrapping')
+
+        editor_layout = QFormLayout()
+        editor_layout.addRow('Font family:', self.font_family_input)
+        editor_layout.addRow('Font size:', self.font_size_input)
+        editor_layout.addRow('Tab size:', self.tab_size_input)
+        editor_layout.addRow('', self.enable_text_wrapping_input)
+
+        editor_group = QGroupBox('Editor')
+        editor_group.setLayout(editor_layout)
+
+        # Buttons
+
+        edit_project_button = QPushButton('Edit default project...')
+        edit_project_button.clicked.connect(
+            lambda: projects.show_edit_dialog('default'))
+
+        save_button = QPushButton('OK')
+        save_button.setDefault(True)
+        save_button.clicked.connect(self.accept)
+
+        cancel_button = QPushButton('Cancel')
+        cancel_button.clicked.connect(self.reject)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(edit_project_button, 1, Qt.AlignLeft)
+        button_layout.addWidget(save_button, 0, Qt.AlignRight)
+        button_layout.addWidget(cancel_button)
+
+        # Main layout
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(editor_group)
+        main_layout.addLayout(button_layout)
+
+        self.setLayout(main_layout)
+
+    def show(self):
+        font = QFont(value('editor/font_family'))
+        self.font_family_input.setCurrentFont(font)
+        self.font_family_input.setCurrentText(QFontInfo(font).family())
+        self.font_family_input.setFocus(Qt.OtherFocusReason)
+
+        self.font_size_input.setValue(value('editor/font_size'))
+
+        self.tab_size_input.setValue(value('editor/tab_size'))
+
+        self.enable_text_wrapping_input.setChecked(
+            value('editor/enable_text_wrapping'))
+
+        super().show()
+
+    def save(self):
+        set_value('editor/font_family',
+                  QFontInfo(self.font_family_input.currentFont()).family())
+        set_value('editor/font_size', self.font_size_input.value())
+        set_value('editor/tab_size', self.tab_size_input.value())
+        set_value('editor/enable_text_wrapping',
+                  self.enable_text_wrapping_input.isChecked())
+
+        edit_dialog_saved().emit()
+
+
 instance = None
+edit_dialog = None
 
 
 def get_instance():
@@ -223,113 +287,19 @@ def remove(key):
     return get_instance().remove(key)
 
 
-# FIXME: deprecated!!!
-def get_default(key):
-    info = get_instance().get_info(key)
-    if info:
-        return info['default']
+def open_group(prefix):
+    return get_instance().open_group(prefix)
 
 
-# FIXME: deprecated!!!
-def has(key):
-    return get_instance().contains(key)
+def child_groups():
+    return get_instance().childGroups()
 
 
-# FIXME: deprecated!!!
-def save(new_settings):
-    changed_settings = {}
-
-    for k, v in new_settings.items():
-        if not has(k) or value(k) != v:
-            set_value(k, v)
-            changed_settings[k] = v
-
-    return changed_settings
+def edit_dialog_saved():
+    return get_instance().edit_dialog_saved
 
 
-# FIXME: deprecated!!!
-def add_project(project):
-    index = __get_next_index(project)
-
-    if index is not False:
-        get_instance().beginWriteArray('projects')
-        get_instance().setArrayIndex(index)
-        get_instance().setValue('projects', project)
-        get_instance().endArray()
-
-
-# FIXME: deprecated!!!
-def delete_project(project):
-    size = get_instance().beginReadArray('projects')
-
-    for i in range(0, size):
-        get_instance().setArrayIndex(i)
-        existing_project = get_instance().value('projects')
-
-        if existing_project == project:
-            get_instance().remove('projects')
-            break
-
-    get_instance().endArray()
-
-    __reindex_projects_array()
-
-
-# FIXME: deprecated!!!
-def get_projects():
-    size = get_instance().beginReadArray('projects')
-
-    projects = []
-    for i in range(0, size):
-        get_instance().setArrayIndex(i)
-        projects.append(get_instance().value('projects'))
-
-    get_instance().endArray()
-
-    return projects
-
-
-# FIXME: deprecated!!!
-def __get_next_index(project):
-    size = get_instance().beginReadArray('projects')
-
-    index = None
-
-    for i in range(0, size):
-        get_instance().setArrayIndex(i)
-        existing_project = get_instance().value('projects')
-
-        if existing_project == project:
-            index = i
-            break
-
-    get_instance().endArray()
-
-    return False if index is not None else size
-
-
-# FIXME: deprecated!!!
-def __reindex_projects_array():
-    size = get_instance().beginReadArray('projects')
-
-    projects = set()
-    for i in range(0, size):
-        get_instance().setArrayIndex(i)
-        project = get_instance().value('projects')
-
-        if project is not None:
-            projects.add(project)
-
-    get_instance().endArray()
-
-    get_instance().remove('projects')
-
-    get_instance().beginWriteArray('projects')
-
-    i = 0
-    for project in projects:
-        get_instance().setArrayIndex(i)
-        get_instance().setValue('projects', project)
-        i += 1
-
-    get_instance().endArray()
+def show_edit_dialog():
+    global edit_dialog
+    edit_dialog = edit_dialog or SettingsEditDialog()
+    edit_dialog.show()

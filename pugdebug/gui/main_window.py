@@ -14,9 +14,6 @@ from PyQt5.QtWidgets import (QMainWindow, QToolBar, QMenuBar, QDockWidget,
                              QAction)
 from PyQt5.QtGui import QKeySequence
 
-from pugdebug.gui.settings import PugdebugSettingsWindow
-from pugdebug.gui.projects import (PugdebugNewProjectWindow,
-                                   PugdebugProjectsBrowser)
 from pugdebug.gui.search import PugdebugFileSearchWindow
 from pugdebug.gui.documents import PugdebugDocumentViewer
 from pugdebug.gui.variables import PugdebugVariableViewer
@@ -24,25 +21,19 @@ from pugdebug.gui.stacktraces import PugdebugStacktraceViewer
 from pugdebug.gui.breakpoints import PugdebugBreakpointViewer
 from pugdebug.gui.expressions import PugdebugExpressionViewer
 from pugdebug.gui.statusbar import PugdebugStatusBar
-from pugdebug import settings, file_browser
+from pugdebug import settings, file_browser, projects
 
 
 class PugdebugMainWindow(QMainWindow):
 
-    new_project_created_signal = pyqtSignal(str)
     search_file_selected_signal = pyqtSignal(str)
 
     def __init__(self):
         super(PugdebugMainWindow, self).__init__()
         self.setObjectName("pugdebug")
-        self.setWindowTitle("pugdebug")
-
-        self.restoreGeometry(settings.value('window/geometry'))
 
         self.file_browser = file_browser.FileBrowserView()
-        self.projects_browser = PugdebugProjectsBrowser()
-        self.settings_window = PugdebugSettingsWindow(self)
-        self.new_project_window = PugdebugNewProjectWindow(self)
+        self.projects_browser = projects.ProjectsBrowserView()
         self.document_viewer = PugdebugDocumentViewer()
         self.variable_viewer = PugdebugVariableViewer()
         self.breakpoint_viewer = PugdebugBreakpointViewer()
@@ -54,13 +45,11 @@ class PugdebugMainWindow(QMainWindow):
 
         self.setup_gui_elements()
 
+        self.restoreGeometry(settings.value('window/geometry'))
         self.restoreState(settings.value('window/state'))
 
-        self.set_window_title(settings.value('current_project'))
-
-        self.projects_browser.project_deleted_signal.connect(
-            self.handle_project_deleted
-        )
+        self.update_window_title()
+        projects.active_project_changed().connect(self.update_window_title)
 
     def closeEvent(self, event):
         settings.set_value('window/geometry', self.saveGeometry())
@@ -125,25 +114,14 @@ class PugdebugMainWindow(QMainWindow):
         )
 
     def setup_file_actions(self):
-        self.new_project_action = QAction("&New project", self)
-        self.new_project_action.setToolTip("Create a new project (Ctrl+N)")
-        self.new_project_action.setStatusTip(
-            "Create a new project. Shortcut: Ctrl+N"
-        )
+        self.new_project_action = QAction("&New project...", self)
         self.new_project_action.setShortcut(QKeySequence("Ctrl+N"))
-        self.new_project_action.triggered.connect(self.new_project_window.exec)
+        self.new_project_action.triggered.connect(projects.show_add_dialog)
 
         self.show_settings_action = QAction("&Settings", self)
-        self.show_settings_action.setToolTip("Show settings (Ctrl+S)")
-        self.show_settings_action.setStatusTip(
-            "Show the settings window. Shortcut: Ctrl+S"
-        )
-        self.show_settings_action.setShortcut(QKeySequence("Ctrl+S"))
-        self.show_settings_action.triggered.connect(self.settings_window.exec)
+        self.show_settings_action.triggered.connect(settings.show_edit_dialog)
 
         self.quit_action = QAction("&Quit", self)
-        self.quit_action.setToolTip("Exit the application (Alt+F4)")
-        self.quit_action.setStatusTip("Exit the application. Shortcut: Alt+F4")
         self.quit_action.setShortcut(QKeySequence("Alt+F4"))
         self.quit_action.triggered.connect(self.close)
 
@@ -292,9 +270,6 @@ class PugdebugMainWindow(QMainWindow):
     def get_projects_browser(self):
         return self.projects_browser
 
-    def get_settings(self):
-        return self.settings_window
-
     def get_document_viewer(self):
         return self.document_viewer
 
@@ -310,16 +285,8 @@ class PugdebugMainWindow(QMainWindow):
     def get_expression_viewer(self):
         return self.expression_viewer
 
-    def handle_project_deleted(self, is_project_current):
-        if is_project_current:
-            self.set_window_title(None)
-
-    def set_window_title(self, project_name):
-        if project_name is not None:
-            title = "pugdebug / %s " % project_name
-        else:
-            title = "pugdebug"
-        self.setWindowTitle(title)
+    def update_window_title(self):
+        self.setWindowTitle("pugdebug / " + projects.active())
 
     def set_debugging_status(self, status):
         self.permanent_statusbar.set_debugging_status(status)

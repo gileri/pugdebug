@@ -12,7 +12,7 @@ __author__ = "robertbasic"
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
 
-from pugdebug import settings
+from pugdebug import settings, projects
 
 
 class PugdebugBreakpointViewer(QTreeWidget):
@@ -56,12 +56,15 @@ class PugdebugBreakpointViewer(QTreeWidget):
         self.item_double_clicked_signal.emit(file, line)
 
     def __cut_filename(self, filename):
-        path_map = settings.value('path/path_mapping')
-        if len(path_map) > 0:
-            path_map = path_map.rstrip('/')
-            filename = filename[len(path_map):]
-        else:
-            root = settings.value('path/project_root')
-            root = root.rstrip('/')
-            filename = filename[len(root):]
-        return "~%s" % filename
+        with settings.open_group('project/' + projects.active()):
+            path_map = settings.value('path/path_mapping')
+            if len(path_map) > 0:
+                path_map = path_map.rstrip('/')
+                if filename.startswith(path_map):
+                    return '~' + filename[len(path_map):]
+            else:
+                root = settings.value('path/project_root')
+                root = root.rstrip('/')
+                if filename.startswith(root):
+                    return '~' + filename[len(root):]
+            return filename

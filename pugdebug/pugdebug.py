@@ -21,8 +21,7 @@ from pugdebug.debugger import PugdebugDebugger
 from pugdebug.gui.main_window import PugdebugMainWindow
 from pugdebug.gui.document import PugdebugDocument
 from pugdebug.models.documents import PugdebugDocuments
-from pugdebug.models.projects import PugdebugProjects
-from pugdebug import settings, file_browser
+from pugdebug import settings, file_browser, projects
 
 
 class Pugdebug(QObject):
@@ -45,7 +44,6 @@ class Pugdebug(QObject):
         self.main_window = PugdebugMainWindow()
         self.file_browser = self.main_window.get_file_browser()
         self.projects_browser = self.main_window.get_projects_browser()
-        self.settings = self.main_window.get_settings()
         self.document_viewer = self.main_window.get_document_viewer()
         self.variable_viewer = self.main_window.get_variable_viewer()
         self.stacktrace_viewer = self.main_window.get_stacktrace_viewer()
@@ -54,27 +52,9 @@ class Pugdebug(QObject):
 
         self.documents = PugdebugDocuments()
 
-        self.setup_file_browser()
-
-        self.setup_projects_browser()
-
         self.connect_signals()
 
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    def setup_file_browser(self):
-        project_root = settings.value('path/project_root')
-        file_browser.set_root_path(project_root)
-        file_browser.file_activated_signal().connect(self.open_local_document)
-
-    def setup_projects_browser(self):
-        """Setup the projects browser
-
-        Sets the model on the projects browser.
-        """
-        model = PugdebugProjects(self)
-
-        self.projects_browser.setModel(model)
 
     def connect_signals(self):
         """Connect all signals to their slots
@@ -82,10 +62,8 @@ class Pugdebug(QObject):
         Connect settings signals, document viewer signals
         toolbar action signals, debugger signals.
         """
-
-        self.connect_projects_browser_signals()
+        file_browser.file_activated().connect(self.open_local_document)
         self.connect_search_files_signals()
-        self.connect_settings_signals()
         self.connect_document_viewer_signals()
         self.connect_documents_signals()
         self.connect_toolbar_action_signals()
@@ -93,22 +71,6 @@ class Pugdebug(QObject):
         self.connect_expression_viewer_signals()
         self.connect_stacktrace_viewer_signals()
         self.connect_breakpoint_viewer_signals()
-
-    def connect_projects_browser_signals(self):
-        """Connect projects browser signals
-
-        Connects the projects browser's activated signal to the
-        slot that gets called when a project browser item is activated.
-
-        Connects the signal that gets emitted from the main window
-        when a new project gets created.
-        """
-        self.projects_browser.activated.connect(
-            self.projects_browser_item_activated
-        )
-        self.main_window.new_project_created_signal.connect(
-            self.handle_new_project_created
-        )
 
     def connect_search_files_signals(self):
         """Connect search for files signals
@@ -118,15 +80,6 @@ class Pugdebug(QObject):
         """
         self.main_window.search_file_selected_signal.connect(
             self.open_document
-        )
-
-    def connect_settings_signals(self):
-        """Connect settings signals
-
-        Connects the signal that gets fired when project root gets changed.
-        """
-        self.settings.settings_changed_signal.connect(
-            self.handle_settings_changed
         )
 
     def connect_document_viewer_signals(self):
@@ -256,53 +209,6 @@ class Pugdebug(QObject):
         self.breakpoint_viewer.item_double_clicked_signal.connect(
             self.jump_to_line_in_file
         )
-
-    def handle_new_project_created(self, project_name):
-        """Handle when a new project gets created
-
-        Reload the projects in the projects browser.
-
-        Find the project that was just created and load it.
-        """
-        logging.debug("Creating new project %s" % project_name)
-        self.projects_browser.load_projects()
-
-        project = self.projects_browser.load_project_by_name(project_name)
-
-        if project is not None:
-            self.load_project(project)
-
-    def projects_browser_item_activated(self, index):
-        """Handle when a projects browser item gets activated
-
-        Find the project and load it.
-        """
-        project = self.projects_browser.model().get_project_by_index(index)
-        self.load_project(project)
-
-    def load_project(self, project):
-        """Load a project
-
-        Get the settings for the project and load them as the current
-        application settings.
-
-        Set the current project name in the window title.
-
-        Set the current project name setting in application settings.
-        """
-        project_settings = project.get_settings()
-
-        project_name = project.get_project_name()
-
-        logging.debug("Loading project %s" % project_name)
-
-        settings.set_value('current_project', project_name)
-
-        changed_settings = settings.save(project_settings)
-
-        self.handle_settings_changed(changed_settings)
-
-        self.main_window.set_window_title(project_name)
 
     def open_local_document(self, path):
         return self.open_document(path, False)
@@ -450,65 +356,6 @@ class Pugdebug(QObject):
         document_widget = self.document_viewer.get_current_document()
         document_widget.move_to_line(line, is_current)
 
-    def handle_settings_changed(self, changed_settings):
-        """Handle when settings have changed.
-
-        Given argument is a set of settings's names which have been changed.
-        """
-        logging.debug("Settings changed")
-
-        if settings.has('current_project'):
-            project_name = settings.value('current_project')
-
-            project = self.projects_browser.load_project_by_name(project_name)
-
-            if project is not None:
-                project.set_settings(changed_settings)
-
-        changed_setting_keys = changed_settings.keys()
-
-        if 'path/project_root' in changed_setting_keys:
-            self.handle_project_root_changed()
-
-        features = ['debugger/max_depth',
-                    'debugger/max_children',
-                    'debugger/max_data']
-
-        if any(True for feature in features
-               if feature in changed_setting_keys):
-            self.handle_debugger_features_changed()
-
-        features = ['editor/tab_size',
-                    'editor/font_family',
-                    'editor/font_size',
-                    'editor/enable_text_wrapping']
-
-        if any(True for feature in features
-                if feature in changed_setting_keys):
-            self.handle_editor_features_changed()
-
-    def handle_project_root_changed(self):
-        """Handle when the project root is changed
-
-        Update the file browser to the new root.
-        """
-        project_root = settings.value('path/project_root')
-
-        logging.debug("Project root changed: %s" % project_root)
-
-        file_browser.set_root_path(project_root)
-
-    def handle_debugger_features_changed(self):
-        logging.debug("Debugger features changed")
-        if self.debugger.is_connected():
-            logging.debug("Setting debugger features")
-            self.debugger.set_debugger_features()
-
-    def handle_editor_features_changed(self):
-        logging.debug("Editor features changed")
-        for document in self.document_viewer.get_all_documents():
-            document.handle_editor_features_changed()
-
     def start_listening(self):
         """Start listening to new incomming connections
 
@@ -522,7 +369,8 @@ class Pugdebug(QObject):
         """
         logging.debug("Start listening")
 
-        break_at_first_line = settings.value('debugger/break_at_first_line')
+        break_at_first_line = settings.value('project/' + projects.active() +
+                                             '/debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
             'Yes' if break_at_first_line else 'No'
@@ -600,7 +448,8 @@ class Pugdebug(QObject):
         If the code should not break at first line, run the debugger.
         """
         logging.debug("Post start")
-        break_at_first_line = settings.value('debugger/break_at_first_line')
+        break_at_first_line = settings.value('project/' + projects.active() +
+                                             '/debugger/break_at_first_line')
 
         logging.debug("Break at first line: %s" % (
             'Yes' if break_at_first_line else 'No'
@@ -940,13 +789,16 @@ class Pugdebug(QObject):
 
         Turns a path like /var/www into /home/user/local/path
         """
-        path_map = settings.value('path/path_mapping')
+        with settings.open_group('project/' + projects.active()):
+            root_path = settings.value('path/project_root')
+            path_map = settings.value('path/path_mapping')
+
         if (len(path_map) > 0 and
                 map_paths is True and
                 path.find(path_map) == 0):
             path_map = path_map.rstrip('/')
             path = path[len(path_map):]
-            path = "%s%s" % (file_browser.get_root_path(), path)
+            path = "%s%s" % (root_path, path)
 
             if not os.path.isfile(path):
                 return False
@@ -958,8 +810,9 @@ class Pugdebug(QObject):
 
         Turns a path like /home/user/local/path to /var/www
         """
-        path_map = settings.value('path/path_mapping')
-        root_path = file_browser.get_root_path()
+        with settings.open_group('project/' + projects.active()):
+            root_path = settings.value('path/project_root')
+            path_map = settings.value('path/path_mapping')
 
         if len(path_map) > 0 and path.find(root_path) == 0:
             path_map = path_map.rstrip('/')
