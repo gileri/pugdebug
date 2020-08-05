@@ -36,15 +36,8 @@ class ProjectsBrowserModel(QAbstractListModel):
         self.emit_data_changed()
 
     def exists(self, project_name, *, ignore_case=False):
-        try:
-            projects = self.projects
-            if ignore_case:
-                projects = [s.lower() for s in projects]
-                project_name = project_name.lower()
-            return projects.index(project_name) >= 0
-
-        except ValueError:
-            return False
+        index = self.index_by_name(project_name, ignore_case=ignore_case)
+        return index.isValid()
 
     def emit_data_changed(self):
         self.dataChanged.emit(QModelIndex(), QModelIndex())
@@ -71,6 +64,17 @@ class ProjectsBrowserModel(QAbstractListModel):
 
     def name_by_index(self, index):
         return self.projects[index.row()]
+
+    def index_by_name(self, project_name, *, ignore_case=False):
+        try:
+            projects = self.projects
+            if ignore_case:
+                projects = [s.lower() for s in projects]
+                project_name = project_name.lower()
+            return self.index(projects.index(project_name))
+
+        except ValueError:
+            return QModelIndex()
 
     def delete(self, project_name):
         if project_name != 'default':
@@ -107,6 +111,7 @@ class ProjectsBrowserView(QListView):
         super().__init__(parent)
 
         model = get_instance()
+        model.active_project_changed.connect(self.select_active_project)
         self.setModel(model)
 
         self.add_action = QAction(QIcon.fromTheme('list-add'),
@@ -169,6 +174,10 @@ class ProjectsBrowserView(QListView):
                         % project_name)
                 if QMessageBox.question(self, '', text) == QMessageBox.Yes:
                     self.model().delete(project_name)
+
+    def select_active_project(self):
+        model = self.model()
+        self.setCurrentIndex(model.index_by_name(model.active))
 
 
 class ProjectEditDialog(QDialog):
