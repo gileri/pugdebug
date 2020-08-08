@@ -193,8 +193,8 @@ class PugdebugDocument(QPlainTextEdit):
         """Move cursor to specified line
         """
         document = self.document()
-        line = min(max(line, 1), document.lineCount())
-        cursor = QTextCursor(document.findBlockByLineNumber(line - 1))
+        line = min(max(line, 1), document.blockCount())
+        cursor = QTextCursor(document.findBlockByNumber(line - 1))
 
         self.setTextCursor(cursor)
 
