@@ -209,9 +209,15 @@ class PugdebugDocument(QPlainTextEdit):
 
         selection.format.setBackground(color)
         selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-        selection.cursor = self.textCursor()
 
-        selection.cursor.clearSelection()
+        selection.cursor = self.textCursor()
+        selection.cursor.movePosition(QTextCursor.StartOfBlock,
+                                      QTextCursor.MoveAnchor)
+        moved = selection.cursor.movePosition(QTextCursor.NextBlock,
+                                              QTextCursor.KeepAnchor)
+        if not moved:
+            selection.cursor.movePosition(QTextCursor.EndOfBlock,
+                                          QTextCursor.KeepAnchor)
 
         self.setExtraSelections([selection])
 

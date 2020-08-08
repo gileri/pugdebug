@@ -34,6 +34,6 @@ class PugdebugDocument():
         data = file.readAll()
         codec = QTextCodec.codecForName('UTF-8')
 
-        self.contents = codec.toUnicode(data).rstrip("\n")
+        self.contents = codec.toUnicode(data)
 
         self.filename = fileinfo.fileName()
