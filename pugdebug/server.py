@@ -185,7 +185,8 @@ class PugdebugServerConnection(QObject):
         init_message = self.parser.parse_init_message(response)
 
         # See if the init message from xdebug is meant for us
-        if idekey != '' and init_message['idekey'] != idekey:
+        if idekey != '' and ('idekey' not in init_message or
+                             init_message['idekey'] != idekey):
             return False
 
         self.init_message = init_message
