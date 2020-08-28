@@ -753,7 +753,8 @@ class Pugdebug(QObject):
         for breakpoint in breakpoints:
             document_widget = self.document_viewer.get_document_by_path(
                 breakpoint['local_filename'])
-            document_widget.rehighlight_breakpoint_lines()
+            if document_widget is not None:
+                document_widget.rehighlight_breakpoint_lines()
 
     def handle_expression_evaluated(self, index, result):
         """Handle when an expression is evaluated"""
