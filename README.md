@@ -14,11 +14,11 @@ A python 3.5, PyQt5 project.
 
 `./app.py`
 
-## Pugdebug settings
+## Settings
 
 To bring up the `Settings` window, navigate to `Files -> Settings` (shortcut: `Ctrl+S`).
 
-### Pugdebug path settings
+### Path settings
 
 The `Path` section refers to the path settings.
 
@@ -28,7 +28,7 @@ The `Maps from` under the `Path` section is for when the project you want to deb
 
 For example, if a project I'm working on is in `/home/robert/wwww/pugdebug` and that maps to `/var/www` under the VM, the `Root` would be set to `/home/robert/www/pugdebug` and the `Maps from` would be set to `/var/www`.
 
-### Pugdebug debugger settings
+### Debugger settings
 
 The `Host` setting should be the IP address of the machine on which pugdebug runs. In most cases (like vagrant) it is perfectly fine to leave this field blank.
 
@@ -40,7 +40,7 @@ The `IDE Key` setting allows to filter out messages from Xdebug based on this va
 
 `Max depth`, `Max children` and `Max data` settings control the amount of information about variables is retrieved from Xdebug.
 
-## PugDebug hotkeys
+## Hotkeys
 
 * `F1` - Start Listening
 * `F2` - Stop Listening
@@ -57,7 +57,9 @@ The `IDE Key` setting allows to filter out messages from Xdebug based on this va
 * `Ctrl+S` - Show settings
 * `Alt+F4` - Exit application
 
-## Debugging sessions
+## FAQ
+
+### Debugging sessions
 
 To start debugging, click the `Start listening` button in the top left corner.
 
@@ -85,12 +87,16 @@ The `Detach` action will detach the debugger from the current request, which all
 
 The `Stop listening` action will tell pugdebug to stop listening to new incomming connections.
 
-## Setting up Xdebug
+### Setting up Xdebug
 
 There is a wiki page with [simple examples of Xdebug configurations](https://github.com/robertbasic/pugdebug/wiki/Setting-up-Xdebug) that should help with setting up Xdebug for remote debugging.
 
-## Setting up the development environment
+### Setting up the development environment
 
 Setting up the development environment should be needed only when you want to help out with developing pugdebug itself. 
 
-The main dependencies are Python 3.5, [QT5.7](http://doc.qt.io/qt-5/gettingstarted.html), [SIP4.9](http://www.riverbankcomputing.com/software/sip/download) and [PyQt5.7](http://www.riverbankcomputing.com/software/pyqt/download5).
+The main dependencies are Python 3.7, [QT5](http://doc.qt.io/qt-5/gettingstarted.html), [SIP](http://www.riverbankcomputing.com/software/sip/download) and [PyQt5](http://www.riverbankcomputing.com/software/pyqt/download5).
+
+### WordPress
+
+As WordPress uses a hook system *Break on the first line* can create issues because open the first file and not where it is the breakpoint as example, so it is better to disable that option.
