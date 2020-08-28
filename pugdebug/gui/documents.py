@@ -73,8 +73,9 @@ class PugdebugDocumentViewer(QTabWidget):
         return self.widget(index)
 
     def get_document_by_path(self, path):
-        index = self.find_tab_index_by_path(path)
-        return self.widget(index)
+        tab_index = self.find_tab_index_by_path(path)
+        if tab_index is not None:
+            return self.widget(tab_index)
 
     def remove_line_highlights(self):
         for index, path in self.tabs.items():
