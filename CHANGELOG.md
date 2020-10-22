@@ -11,9 +11,12 @@
  - Simple logging, appending to ~/pugdebug.log
  - UI improvements
  - New Go to line window
+ - Added line numbers in editor
+ - Close tabs with middle right mouse button
  - Better support on linux (including file names with initial dot)
  - Better syntax highlighting
  - New readme
+ - Pypi package release
 
 ### Changed
  - Cursor in editor is now a regular arrow, read-only cursor
@@ -27,6 +30,7 @@
    in another widget.
  - The context menu in the Projects widget should not be displayed if
    a user did not click on a project line.
+ - Fixed various crashes
 
 ### Removed
 
