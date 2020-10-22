@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased][unrealeased]
+## 1.1.0 - 2020-10-22
 
 ### Added
  - Document is closed if underlying file is deleted

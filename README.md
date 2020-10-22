@@ -8,7 +8,13 @@ A python 3.5, PyQt5 project.
 
 ## Install pugdebug
 
-`pip3 install -r requirements.txt`
+### Install from pip
+
+`pip install pubdebug`
+
+### Install from source
+
+`pip install -r requirements.txt`
 
 ## Using pugdebug
 
