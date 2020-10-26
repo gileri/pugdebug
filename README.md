@@ -10,7 +10,7 @@ A python 3.5, PyQt5 project.
 
 ### Install from pip
 
-`pip install pubdebug`
+`pip install pugdebug`
 
 ### Install from source
 
