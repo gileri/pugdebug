@@ -30,7 +30,7 @@ class PugdebugMessageParser():
         attribs = ['fileuri', 'idekey']
         init_message = self.get_attribs(xml, attribs, init_message)
 
-        for element in xml.getchildren():
+        for element in xml:
             tag_name = element.tag.replace(self.namespace, '')
             tag_value = element.text
 
@@ -47,7 +47,7 @@ class PugdebugMessageParser():
 
         typemap = {}
 
-        for item in xml.getchildren():
+        for item in xml:
             language, common = item.attrib['name'], item.attrib['type']
             if language and common:
                 typemap[language] = common
@@ -69,7 +69,7 @@ class PugdebugMessageParser():
             continuation_message
         )
 
-        if len(xml.getchildren()) == 1:
+        if len(xml) == 1:
             attribs = ['filename', 'lineno']
             continuation_message = self.get_attribs(
                 xml[0],
@@ -88,7 +88,7 @@ class PugdebugMessageParser():
         xml = xml_parser.fromstring(message)
 
         attribs = ['name', 'id']
-        for context in xml.getchildren():
+        for context in xml:
             variable_message.append(self.get_attribs(context, attribs, {}))
 
         return variable_message
@@ -114,7 +114,7 @@ class PugdebugMessageParser():
         xml = xml_parser.fromstring(message)
 
         attribs = ['filename', 'lineno', 'where', 'level']
-        for child in xml.getchildren():
+        for child in xml:
             stacktrace = {}
             stacktrace = self.get_attribs(child, attribs, stacktrace)
 
@@ -128,10 +128,7 @@ class PugdebugMessageParser():
 
         xml = xml_parser.fromstring(message)
 
-        if len(xml.getchildren()):
-            return False
-
-        return True
+        return not len(xml)
 
     def parse_breakpoint_remove_message(self, message):
         if not message:
@@ -139,10 +136,8 @@ class PugdebugMessageParser():
 
         xml = xml_parser.fromstring(message)
 
-        children = xml.getchildren()
-
-        if len(children) == 1:
-            child = children.pop()
+        if len(xml) == 1:
+            child = xml[0]
             if child.tag.endswith('breakpoint'):
                 return int(child.attrib['id'])
 
@@ -157,7 +152,7 @@ class PugdebugMessageParser():
         xml = xml_parser.fromstring(message)
 
         attribs = ['type', 'filename', 'lineno', 'state', 'id']
-        for child in xml.getchildren():
+        for child in xml:
             breakpoint = {}
             breakpoint = self.get_attribs(child, attribs, breakpoint)
 
@@ -179,7 +174,7 @@ class PugdebugMessageParser():
         return self.get_variable(child)
 
     def get_variables(self, parent, result):
-        for child in parent.getchildren():
+        for child in parent:
             result.append(self.get_variable(child))
 
         return result
